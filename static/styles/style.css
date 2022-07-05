@@ -1,0 +1,127 @@
+html {
+    overflow-y: scroll;
+}
+body {
+    font-family: -apple-system,Segoe UI,Ubuntu,Helvetica,Arial;
+    background-color: #fafbfc;
+    color: #353739;
+    margin: 0;
+}
+div#container {
+    position: relative;
+    width: 70%;
+    margin: 2em auto 0 auto;
+    }
+table#data {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 3em 0;
+    table-layout: fixed;
+}
+table#data tr {
+    border-bottom: 1px solid #ddd;
+}
+table#data th {
+    padding: 5px 0;
+    text-align: left;
+    font-weight: 600;
+}
+table#data td {
+    padding: 5px 0;
+    vertical-align: top;
+    word-wrap: break-word;
+}
+header {
+    text-align: center;
+}
+header h1 {
+    margin: 0;
+}
+header p {
+    color: #ef3800;
+    font: bold 150% Tahoma,Verdana;
+    margin: 0;
+    width: 75%;
+    float: right;
+}
+div#searchbox {
+    display: flex;
+    margin: 4em auto 0 auto;
+}
+input#url {
+    font-size: 1.1em;
+    height: 2.8em;
+    border: 1px solid #ccc;
+    border-radius: 5px 0 0 5px;
+    padding-left: .75em;
+    width: 80%;
+    outline: none;
+}
+button#scan {
+    color: white;
+    background-color: #3490dc;
+    border: 0;
+    border-radius: 0 5px 5px 0;
+    height: 2.8em;
+    font-size: 1.1em;
+    font-weight: 600;
+    flex-grow: 1;
+    outline: none;
+}
+button#scan:hover {
+    background-color: #2779bd;
+}
+sup {
+    color: #777;
+}
+progress {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    height: 5px;
+    width: 100%;
+    background-color: transparent;
+    border: 0;
+    margin: 5px 0;
+}
+progress::-webkit-progress-bar {
+    background-color: transparent;
+}
+progress::-webkit-progress-value {
+    background-color: #3490dc;
+}
+progress::-moz-progress-bar {
+    background-color: #3490dc;
+}
+span#status {
+    float: right;
+    font-size: 80%;
+}
+a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-skip: ink;
+}
+a:hover {
+    text-decoration: none;
+}
+a#link {
+    color: inherit;
+    text-decoration: none;
+}
+span#source {
+    position: fixed;
+    right: 1em;
+    bottom: 1em;
+    background-color: #fafbfc;
+}
+@media (max-width: 800px) {
+    body, table, span {
+        font-size: 75%;
+    }
+    div#container {
+        width: 95%;
+    }
+    img#logo {
+        width: 80%;
+    }
+}

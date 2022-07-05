@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+    <head><meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Typo-Squatting</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+		<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/style.css') }}">    </head>
+
+    <body>
+        <div id="container">
+            <div>
+                <header>
+                    <!-- <h1><img id="logo" src="data:image/png;base64,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"></h1> -->
+                    <h1><img id="logo" src="{{ url_for('static',filename='ail-typosquatting.png') }}"></h1>
+                    <p>Typo-Squatting finder</p>
+                </header>
+                <div id="searchbox">
+                    <input type="hidden" id="sid">
+                    <input type="text" id="url" placeholder="Enter domain name" autofocus>
+                    <button id="scan">Scan</button>
+                </div>
+                <progress id="progress" value="0"></progress>
+                <span id="status"></span>
+            </div>
+            <p>
+                <a class="btn btn-primary" data-toggle="collapse" href="#collapseOption" role="button" aria-expanded="false" aria-controls="collapseOption">
+                  Advanced
+                </a>
+            </p>
+            <div class="collapse show" id="collapseOption">
+                <div class="card card-body">
+                    <table id="advanced">
+                        <tr>
+                            <td>
+                                <input type="checkbox" id="runAll" onclick="runAll()" value="runAll">
+                                <label for="runAll">Run all algorithm</label>
+                            </td>
+                            <td>
+                                <input type="checkbox" id="charom" value="characterOmission">
+                                <label for="charom">Character Omission</label>
+                            </td>
+                            <td>
+                                <input type="checkbox" id="rep", value="repetition">
+                                <label for="rep">Repetition</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <input type="checkbox" id="trans", value="transposition">
+                                <label for="transposition">Transposition</label>
+                            </td>
+                            <td>
+                                <input type="checkbox" id="repl", value="replacement">
+                                <label for="repl">Replacement</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <input type="checkbox" id="dr", value="doubleReplacement">
+                                <label for="dr">Double Replacement</label>
+                            </td>
+                            <td>
+                                <input type="checkbox" id="inser", value="insertion">
+                                <label for="inser">Insertion</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <input type="checkbox" id="add", value="addition">
+                                <label for="add">Addition</label>
+                            </td>
+                            <td>
+                                <input type="checkbox" id="md", value="missingDot">
+                                <label for="md">Missing Dot</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <input type="checkbox" id="sd", value="stripDash">
+                                <label for="sd">Strip Dash</label>
+                            </td>
+                            <td>
+                                <input type="checkbox" id="vs", value="vowelSwap">
+                                <label for="vs">Vowel Swap</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <input type="checkbox" id="hyph", value="hyphenation">
+                                <label for="hyph">Hyphenation</label>
+                            </td>
+                            <td>
+                                <input type="checkbox" id="bs", value="bitsquatting">
+                                <label for="bs">BitSquatting</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <input type="checkbox" id="homog", value="homoglyph">
+                                <label for="homog">Homoglyph</label>
+                            </td>
+                            <td>
+                                <input type="checkbox" id="cm", value="commonMisspelling">
+                                <label for="cm">Common Misspelling</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <input type="checkbox" id="homoph", value="homophone">
+                                <label for="homoph">Homophone</label>
+                            </td>
+                            <td>
+                                <input type="checkbox" id="wt", value="wrongTld">
+                                <label for="wt">Wrong TLD</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <input type="checkbox" id="addtld", value="addTld">
+                                <label for="addtld">Add TLD</label>
+                            </td>
+                            <td>
+                                <input type="checkbox" id="sub", value="subdomain">
+                                <label for="sub">Subdomain</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <input type="checkbox" id="sp", value="singularpluralize">
+                                <label for="sp">Singular Pluralize</label>
+                            </td>
+                            <td>
+                                <input type="checkbox" id="cdh", value="changedothyphenation">
+                                <label for="cdh">Change Dot Hyphenation</label>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <table id="data"></table>
+        </div>
+        <span id="source">[<a href="https://github.com/ail-project/ail-typo-website">source code</a>]</span>
+    </body>
+
+	<script src="{{ url_for('static',filename='core.js') }}"></script>
+</html>
