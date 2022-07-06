@@ -1,4 +1,5 @@
 last_registered = 0;
+url = ''
     
 function fetchDomains() {
     $.getJSON('/domains/' + $('#sid').val(), function(data) {
@@ -20,12 +21,23 @@ function fetchDomains() {
                 dns_ns = (item[j]['NS'] || [''])[0];
                 dns_mx = (item[j]['MX'] || [''])[0];
                 geoip = item[j]['geoip'] || '';
-                $('<tr>').html(
-                    '<td>' + permutation + '  <a href="http://' + permutation + '" id="link" target="_blank">🔗</a></br><sup>' + variation + '</sup></td>' +
-                    '<td>' + ipaddr + '</br><sup>' + geoip + '</sup></td>' +
-                    '<td>' + dns_ns + '</td>' +
-                    '<td>' + dns_mx + '</td>'
-                ).appendTo('#data');
+
+                if(j == url){
+                    $('<tr>').html(
+                        '<td style="background-color: #e9ecef; vertical-align: middle; padding-left: 5px;">' + permutation + '  <a href="http://' + permutation + '" id="link" target="_blank">🔗</a></br><sup>' + variation + '</sup></td>' +
+                        '<td style="background-color: #e9ecef; vertical-align: middle;">' + ipaddr + '</br><sup>' + geoip + '</sup></td>' +
+                        '<td style="background-color: #e9ecef; vertical-align: middle;">' + dns_ns + '</td>' +
+                        '<td style="background-color: #e9ecef; vertical-align: middle;">' + dns_mx + '</td>'
+                    ).appendTo('#data');
+                }
+                else{
+                    $('<tr>').html(
+                        '<td style="vertical-align: middle; padding-left: 5px;">' + permutation + '  <a href="http://' + permutation + '" id="link" target="_blank">🔗</a></br><sup>' + variation + '</sup></td>' +
+                        '<td style="vertical-align: middle;">' + ipaddr + '</br><sup>' + geoip + '</sup></td>' +
+                        '<td style="vertical-align: middle;">' + dns_ns + '</td>' +
+                        '<td style="vertical-align: middle;">' + dns_mx + '</td>'
+                    ).appendTo('#data');
+                }
             }
             
         });
@@ -34,14 +46,24 @@ function fetchDomains() {
 
 function pollScan() {
     $.getJSON('/status/' + $('#sid').val(), function(data) {
+        pourcent = Math.round((data['complete']/data['total'])*100)
         $('#status').html('Processed ' + data['complete'] + ' of ' + data['total']);
-        $('#progress').val(data['complete']/data['total']);
+        $('#progress').text(pourcent + '%');
+        $('#progress').css("width", pourcent + '%');
         if (data['remaining'] > 0) {
             setTimeout(pollScan, 250);
         } else {
             sid = $('#sid').val()
-            $('#status').html('Scanned <a href="/api/scans/' + sid + '/list">' + data['complete'] + '</a> suspicious domains. Identified ' + data['registered'] + ' registered: download as <a href="/download/' + sid + '/json">JSON</a>');
+            $('#status').html('Scanned ' + data['complete'] + '</a> domains. Identified ' + data['registered'] + ' registered.');
             $('#scan').text('Scan');
+            $('#dropdownDownload').html(
+            '<a class="btn btn-primary dropdown-toggle" href="" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Download</a>' +   
+            '<div class="dropdown-menu" aria-labelledby="dropdownMenuLink">' + 
+                '<a class="dropdown-item" href="/download/' + sid + '/list">List of Variations</a>' +
+                '<div class="dropdown-divider"></div>' +
+                '<a class="dropdown-item" href="/download/' + sid + '/json">Result as JSON</a>' +
+            '</div>'
+            )
         }
         if (last_registered < data['registered']) {
             last_registered = data['registered']
@@ -49,6 +71,42 @@ function pollScan() {
         }
     });
 }
+
+function extractHostname(url) {
+    var hostname;
+    //find & remove protocol (http, ftp, etc.) and get hostname
+  
+    if (url.indexOf("//") > -1) {
+      hostname = url.split('/')[2];
+    } else {
+      hostname = url.split('/')[0];
+    }
+  
+    //find & remove port number
+    hostname = hostname.split(':')[0];
+    //find & remove "?"
+    hostname = hostname.split('?')[0];
+  
+    return hostname;
+  }
+
+function extractRootDomain(url) {
+    var domain = extractHostname(url),
+    splitArr = domain.split('.'),
+    arrLen = splitArr.length;
+  
+    //extracting the root domain here
+    //if there is a subdomain
+    if (arrLen > 2) {
+      domain = splitArr[arrLen - 2] + '.' + splitArr[arrLen - 1];
+      //check to see if it's using a Country Code Top Level Domain (ccTLD) (i.e. ".me.uk")
+      if (splitArr[arrLen - 2].length == 2 && splitArr[arrLen - 1].length == 2) {
+        //this is using a ccTLD
+        domain = splitArr[arrLen - 3] + '.' + domain;
+      }
+    }
+    return domain;
+  }
 
 function actionScan() {
     if (!$('#url').val()) {
@@ -59,9 +117,14 @@ function actionScan() {
     if ($('#scan').text() == 'Scan') {
         last_registered = 0;
         $('#scan').text('⏱');
+        $('#data').empty();
+        $('#dropdownDownload').empty();
+
+        u = $('#url').val()
+        url = extractRootDomain(u)
         
         data_dict = {}
-        data_dict['url'] = $('#url').val()
+        data_dict['url'] = url
         flag = false
         if (document.getElementById("runAll").checked){
             data_dict['runAll'] = $('#runAll').val()
@@ -153,7 +216,7 @@ function actionScan() {
     } else {
         stop();
         $.post({
-            url: '/stop',
+            url: '/stop/' + $('#sid').val(),
             contentType: 'application/json',
             success: function() {
                 $('#scan').text('Scan');
@@ -171,6 +234,7 @@ $('#url').on('keypress',function(e) {
         actionScan();
     }
 });
+
 
 function runAll(){
     if (document.getElementById("runAll").checked){

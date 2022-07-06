@@ -17,7 +17,7 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 FLASK_PORT = 7005
 FLASK_URL = "127.0.0.1"
 
-num_threads = 10
+num_threads = 12
 sessions = list()
 
 class Session():
@@ -146,6 +146,12 @@ class Session():
 
         self.variations_list.insert(0, self.url)
         self.result = [{} for x in self.variations_list]
+
+    def dl_list(self):
+        s = ''
+        for variation in self.variations_list:
+            s += variation + '\n'
+        return s
         
 
 @app.route("/")
@@ -164,7 +170,7 @@ def typo():
 
     return jsonify(session.status()), 201
     
-@app.route("/stop/<sid>")
+@app.route("/stop/<sid>", methods=['POST'])
 def stop(sid):
     for s in sessions:
         if s.id == sid:
@@ -186,10 +192,17 @@ def domains(sid):
     return jsonify({'message': 'Scan session not found'}), 404
 
 @app.route("/download/<sid>/json")
-def json(sid):
+def download_json(sid):
     for s in sessions:
         if s.id == sid:
-            return jsonify(s.domains()), 200, {'Content-Disposition': 'attachment; filename=typo-squatting.json'}
+            return jsonify(s.domains()), 200, {'Content-Disposition': f'attachment; filename=typo-squatting-{s.url}.json'}
+    return jsonify({'message': 'Scan session not found'}), 404
+
+@app.route("/download/<sid>/list")
+def download_list(sid):
+    for s in sessions:
+        if s.id == sid:
+            return s.dl_list(), 200, {'Content-Type': 'text/plain', 'Content-Disposition': f'attachment; filename={s.url}-variations.txt'}
     return jsonify({'message': 'Scan session not found'}), 404
 
 if __name__ == "__main__":
