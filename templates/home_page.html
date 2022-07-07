@@ -1,17 +1,22 @@
 <!DOCTYPE html>
 <html>
-    <head><meta charset="utf-8">
+    <head>
+        <meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1">
         <title>Typo-Squatting</title>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
         <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/style.css') }}">
         <link rel= "stylesheet" href= "{{ url_for('static',filename='font-awesome/css/font-awesome.min.css') }}"> 
     </head>
 
     <body>
+        <div class="corner-ribbon top-right sticky white shadow">
+            <a href="https://github.com/ail-project/ail-typo-website" target="_blank">Project page</a>
+        </div>
+        
         <div id="container">
             <div>
                 <header>
@@ -40,7 +45,7 @@
                 
             </div>
             
-            <div class="collapse show" id="collapseOption">
+            <div class="collapse " id="collapseOption">
                 <div class="card card-body">
                     <table id="advanced">
                         <tr>
@@ -49,111 +54,111 @@
                                 <label for="runAll">Run all algorithm</label>
                             </td>
                             <td>
-                                <input type="checkbox" id="charom" value="characterOmission">
-                                <label for="charom">Character Omission</label>
+                                <input type="checkbox" id="add", value="addition">
+                                <label for="add">Addition <i style="font-size:12px">~ 37*</i></label>
                             </td>
                             <td>
-                                <input type="checkbox" id="rep", value="repetition">
-                                <label for="rep">Repetition</label>
+                                <input type="checkbox" id="addtld", value="addTld">
+                                <label for="addtld">Add TLD <i style="font-size:12px">~ 1489*</i></label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><i style="font-size:12px">*numbers of variations based on "circl.lu" domain</i></td>
+                            <td>
+                                <input type="checkbox" id="bs", value="bitsquatting">
+                                <label for="bs">BitSquatting <i style="font-size:12px">~ 26*</i></label>
+                            </td>
+                            <td>
+                                <input type="checkbox" id="charom" value="characterOmission">
+                                <label for="charom">Character Omission <i style="font-size:12px">~ 6*</i></label>
                             </td>
                         </tr>
                         <tr>
                             <td></td>
                             <td>
-                                <input type="checkbox" id="trans", value="transposition">
-                                <label for="transposition">Transposition</label>
+                                <input type="checkbox" id="cdh", value="changedothyphenation">
+                                <label for="cdh">Change Dot Hyphenation <i style="font-size:12px">~ 1489*</i></label>
                             </td>
                             <td>
-                                <input type="checkbox" id="repl", value="replacement">
-                                <label for="repl">Replacement</label>
+                                <input type="checkbox" id="cm", value="commonMisspelling">
+                                <label for="cm">Common Misspelling <i style="font-size:12px">~ 1*</i></label>
                             </td>
                         </tr>
                         <tr>
                             <td></td>
                             <td>
                                 <input type="checkbox" id="dr", value="doubleReplacement">
-                                <label for="dr">Double Replacement</label>
+                                <label for="dr">Double Replacement <i style="font-size:12px">~ 25*</i></label>
                             </td>
-                            <td>
-                                <input type="checkbox" id="inser", value="insertion">
-                                <label for="inser">Insertion</label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>
-                                <input type="checkbox" id="add", value="addition">
-                                <label for="add">Addition</label>
-                            </td>
-                            <td>
-                                <input type="checkbox" id="md", value="missingDot">
-                                <label for="md">Missing Dot</label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>
-                                <input type="checkbox" id="sd", value="stripDash">
-                                <label for="sd">Strip Dash</label>
-                            </td>
-                            <td>
-                                <input type="checkbox" id="vs", value="vowelSwap">
-                                <label for="vs">Vowel Swap</label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>
-                                <input type="checkbox" id="hyph", value="hyphenation">
-                                <label for="hyph">Hyphenation</label>
-                            </td>
-                            <td>
-                                <input type="checkbox" id="bs", value="bitsquatting">
-                                <label for="bs">BitSquatting</label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td></td>
                             <td>
                                 <input type="checkbox" id="homog", value="homoglyph">
-                                <label for="homog">Homoglyph</label>
-                            </td>
-                            <td>
-                                <input type="checkbox" id="cm", value="commonMisspelling">
-                                <label for="cm">Common Misspelling</label>
+                                <label for="homog">Homoglyph <i style="font-size:12px">~ 1283*</i></label>
                             </td>
                         </tr>
                         <tr>
                             <td></td>
                             <td>
                                 <input type="checkbox" id="homoph", value="homophone">
-                                <label for="homoph">Homophone</label>
+                                <label for="homoph">Homophone <i style="font-size:12px">~ 1*</i></label>
                             </td>
                             <td>
-                                <input type="checkbox" id="wt", value="wrongTld">
-                                <label for="wt">Wrong TLD</label>
+                                <input type="checkbox" id="hyph", value="hyphenation">
+                                <label for="hyph">Hyphenation <i style="font-size:12px">~ 5*</i></label>
                             </td>
                         </tr>
                         <tr>
                             <td></td>
                             <td>
-                                <input type="checkbox" id="addtld", value="addTld">
-                                <label for="addtld">Add TLD</label>
+                                <input type="checkbox" id="inser", value="insertion">
+                                <label for="inser">Insertion <i style="font-size:12px">~ 31*</i></label>
                             </td>
                             <td>
-                                <input type="checkbox" id="sub", value="subdomain">
-                                <label for="sub">Subdomain</label>
+                                <input type="checkbox" id="md", value="missingDot">
+                                <label for="md">Missing Dot <i style="font-size:12px">~ 3*</i></label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <input type="checkbox" id="rep", value="repetition">
+                                <label for="rep">Repetition <i style="font-size:12px">~ 6*</i></label>
+                            </td>
+                            <td>
+                                <input type="checkbox" id="repl", value="replacement">
+                                <label for="repl">Replacement <i style="font-size:12px">~ 25*</i></label>
                             </td>
                         </tr>
                         <tr>
                             <td></td>
                             <td>
                                 <input type="checkbox" id="sp", value="singularpluralize">
-                                <label for="sp">Singular Pluralize</label>
+                                <label for="sp">Singular Pluralize <i style="font-size:12px">~ 2*</i></label>
                             </td>
                             <td>
-                                <input type="checkbox" id="cdh", value="changedothyphenation">
-                                <label for="cdh">Change Dot Hyphenation</label>
+                                <input type="checkbox" id="sd", value="stripDash">
+                                <label for="sd">Strip Dash <i style="font-size:12px">~ 1*</i></label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <input type="checkbox" id="sub", value="subdomain">
+                                <label for="sub">Subdomain <i style="font-size:12px">~ 5*</i></label>
+                            </td>
+                            <td>
+                                <input type="checkbox" id="trans", value="transposition">
+                                <label for="transposition">Transposition <i style="font-size:12px">~ 5*</i></label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <input type="checkbox" id="vs", value="vowelSwap">
+                                <label for="vs">Vowel Swap <i style="font-size:12px">~ 6*</i></label>
+                            </td>
+                            <td>
+                                <input type="checkbox" id="wt", value="wrongTld">
+                                <label for="wt">Wrong TLD <i style="font-size:12px">~ 1488*</i></label>
                             </td>
                         </tr>
                     </table>
@@ -161,7 +166,6 @@
             </div>
             <table id="data"></table>
         </div>
-        <span id="source"><a href="https://github.com/ail-project/ail-typo-website" target="_blank"><i class="fa fa-github fa-2x"></i></a></span>       
     </body>
 
 	<script src="{{ url_for('static',filename='js/core.js') }}"></script>

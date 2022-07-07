@@ -59,7 +59,7 @@ input#url {
 }
 button#scan {
     color: white;
-    background-color: #3490dc;
+    background-color: #0d6efd;
     border: 0;
     border-radius: 0 5px 5px 0;
     height: 2.8em;
@@ -125,3 +125,36 @@ span#source {
         width: 80%;
     }
 }
+
+.corner-ribbon{
+    width: 200px;
+    background: #e43;
+    position: absolute;
+    top: 25px;
+    left: -50px;
+    text-align: center;
+    line-height: 50px;
+    letter-spacing: 1px;
+    color: #f0f0f0;
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+  }
+  /* Custom styles */
+
+.corner-ribbon.sticky{
+    position: fixed;
+  }
+  
+.corner-ribbon.shadow{
+box-shadow: 0 0 3px rgba(0,0,0,.3);
+}
+
+.corner-ribbon.top-right{
+top: 22px;
+right: -50px;
+left: auto;
+transform: rotate(45deg);
+-webkit-transform: rotate(45deg);
+}
+
+.corner-ribbon.white{background: #f0f0f0; color: #0d6efd;}
