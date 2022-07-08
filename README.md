@@ -3,7 +3,7 @@ Website for [ail-typo-squatting](https://github.com/ail-project/ail-typo-squatti
 
 
 
-<img src="https://github.com/ail-project/ail-typo-website/doc/ail-typo-website.png">
+![ail-typo-website](https://github.com/ail-project/ail-typo-website/blob/main/doc/ail-typo-website.png?raw=true)
 
 
 
