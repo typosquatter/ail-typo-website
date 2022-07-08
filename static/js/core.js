@@ -51,7 +51,7 @@ function pollScan() {
         $('#progress').text(pourcent + '%');
         $('#progress').css("width", pourcent + '%');
         if (data['remaining'] > 0) {
-            setTimeout(pollScan, 250);
+            setTimeout(pollScan, 1000);
         } else {
             sid = $('#sid').val()
             $('#status').html('Scanned ' + data['complete'] + '</a> domains. Identified ' + data['registered'] + ' registered.');
