@@ -1,0 +1,10 @@
+[Flask_server]
+ip = 127.0.0.1
+port = 7005
+
+[Flask_api]
+ip = 127.0.0.1
+port = 7006
+
+[Thread]
+num_threads = 10

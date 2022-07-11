@@ -1,13 +1,29 @@
 from flask import Flask, jsonify
 from flask_restx import Api, Resource
 
+import os
+import configparser
 import requests
+
+pathConf = './conf/conf.cfg'
+
+if os.path.isfile(pathConf):
+    config = configparser.ConfigParser()
+    config.read(pathConf)
+else:
+    print("[-] No conf file found")
+    exit(-1)
+
+if 'Flask_api' in config:
+    FLASK_PORT = int(config['Flask_api']['port'])
+    FLASK_URL = config['Flask_api']['ip']
+else:
+    FLASK_PORT = '127.0.0.1'
+    FLASK_URL = 7006
+
 
 app = Flask(__name__)
 api = Api(app)
-
-FLASK_PORT = 7006
-FLASK_URL = "127.0.0.1"
 
 def getStatus(sid):
     return requests.get(f'http://localhost:7005/status/{sid}').json()

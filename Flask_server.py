@@ -2,18 +2,38 @@ from flask import Flask, render_template, url_for, request, jsonify
 from ail_typo_squatting import *
 import math
 from uuid import uuid4
+import configparser
+import os
 
 import requests
 
 from queue import Queue
 from threading import Thread
 
+
+pathConf = './conf/conf.cfg'
+
+if os.path.isfile(pathConf):
+    config = configparser.ConfigParser()
+    config.read(pathConf)
+else:
+    print("[-] No conf file found")
+    exit(-1)
+
+if 'Flask_server' in config:
+    FLASK_PORT = int(config['Flask_server']['port'])
+    FLASK_URL = config['Flask_server']['ip']
+else:
+    FLASK_PORT = '127.0.0.1'
+    FLASK_URL = 7005
+
+if 'Thread' in config:
+    num_threads = int(config['Thread']['num_threads'])
+else:
+    num_threads = 10
+
 app = Flask(__name__)
 
-FLASK_PORT = 7005
-FLASK_URL = "127.0.0.1"
-
-num_threads = 12
 sessions = list()
 
 class Session():
@@ -37,6 +57,7 @@ class Session():
             worker.setDaemon(True)
             worker.start()
             self.threads.append(worker)
+
 
     def geoIp(self, ip):
         """Geolocation for an IP"""
@@ -151,11 +172,16 @@ class Session():
         self.result = [{} for x in self.variations_list]
 
     def dl_list(self):
+        """list of variations to string"""
         s = ''
         for variation in self.variations_list:
             s += variation + '\n'
         return s
         
+
+###############
+# FLASK ROUTE #
+###############
 
 @app.route("/")
 def index():

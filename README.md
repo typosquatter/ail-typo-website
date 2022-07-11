@@ -7,6 +7,16 @@ Website for [ail-typo-squatting](https://github.com/ail-project/ail-typo-squatti
 
 
 
+## Requirements
+
+- [requests](https://github.com/psf/requests)
+
+- [flask](https://flask.palletsprojects.com/en/2.1.x/)
+
+- [ail-typo-squatting](https://github.com/ail-project/ail-typo-squatting)
+
+
+
 ## Choice of algorithm
 
 In the `Advanced` option, it's possible to choose algorithms to generate variations from a domain name.
