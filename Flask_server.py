@@ -8,11 +8,7 @@ import requests
 from queue import Queue
 from threading import Thread
 
-# app = Flask(__name__, static_url_path=baseUrl+'/static/')
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 900 * 1024 * 1024
-app.config["DEBUG"] = False
-app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 FLASK_PORT = 7005
 FLASK_URL = "127.0.0.1"
@@ -32,6 +28,7 @@ class Session():
         self.url = url
 
     def scan(self):
+        """Start all worker"""
         for i in range(len(self.variations_list)):
             #need the index and the url in each queue item.
             self.jobs.put((i, self.variations_list[i]))
@@ -42,12 +39,14 @@ class Session():
             self.threads.append(worker)
 
     def geoIp(self, ip):
+        """Geolocation for an IP"""
         response = requests.get(f"https://ip.circl.lu/geolookup/{ip}")
         response_json = response.json()
         return response_json[0]['country_info']['Country'] 
 
-    # Threaded function for queue processing.
+
     def crawl(self):
+        """Threaded function for queue processing."""
         while not self.jobs.empty():
             work = self.jobs.get()                      #fetch new work from the Queue
             try:
@@ -74,6 +73,7 @@ class Session():
         return True
 
     def status(self):
+        """Status of the current queue"""
         if self.jobs.empty():
             self.stop()
         total = len(self.variations_list)
@@ -89,16 +89,19 @@ class Session():
             }
 
     def stop(self):
+        """Stop the current queue and worker"""
         self.jobs.queue.clear()
         for worker in self.threads:
             worker.join()
         self.threads.clear()
 
     def domains(self):
+        """Return all accessible domains"""
         domain = [x for x in self.result.copy() for e in x if len(x[e]) > 1]
         return domain
     
     def callVariations(self, data_dict):
+        """Generate variations by options"""
         all_keys = data_dict.keys()
         if "runAll" in all_keys:
             self.variations_list = runAll(self.url, math.inf, 'txt', "-")
@@ -156,10 +159,12 @@ class Session():
 
 @app.route("/")
 def index():
+    """Home page"""
     return render_template("home_page.html")
 
 @app.route("/typo", methods=['POST'])
 def typo():
+    """Run the scan"""
     data_dict = request.json["data_dict"]
     url = data_dict["url"]
 
@@ -170,40 +175,63 @@ def typo():
 
     return jsonify(session.status()), 201
     
+
 @app.route("/stop/<sid>", methods=['POST'])
 def stop(sid):
+    """Stop the <sid> queue"""
     for s in sessions:
         if s.id == sid:
             s.stop()
     return jsonify({})
 
+
 @app.route("/status/<sid>")
 def status(sid):
+    """Status of <sid> queue"""
     for s in sessions:
         if s.id == sid:
             return jsonify(s.status())
     return jsonify({'message': 'Scan session not found'}), 404
 
+
 @app.route("/domains/<sid>")
 def domains(sid):
+    """eturn all accessible domains"""
     for s in sessions:
         if s.id == sid:
             return jsonify(s.domains())
     return jsonify({'message': 'Scan session not found'}), 404
 
+
 @app.route("/download/<sid>/json")
 def download_json(sid):
+    """Give the result as json format"""
     for s in sessions:
         if s.id == sid:
             return jsonify(s.domains()), 200, {'Content-Disposition': f'attachment; filename=typo-squatting-{s.url}.json'}
     return jsonify({'message': 'Scan session not found'}), 404
 
+
 @app.route("/download/<sid>/list")
 def download_list(sid):
+    """Give the list of variations"""
     for s in sessions:
         if s.id == sid:
             return s.dl_list(), 200, {'Content-Type': 'text/plain', 'Content-Disposition': f'attachment; filename={s.url}-variations.txt'}
     return jsonify({'message': 'Scan session not found'}), 404
+
+
+@app.route("/api/<url>")
+def api(url):
+    data_dict = dict()
+    data_dict['add'] = True
+    session = Session(url)
+    session.callVariations(data_dict)
+    session.scan()
+    sessions.append(session)
+
+    return jsonify({'sid': session.id}), 200
+
 
 if __name__ == "__main__":
     app.run(host=FLASK_URL, port=FLASK_PORT)
