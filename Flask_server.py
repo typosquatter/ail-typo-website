@@ -250,7 +250,7 @@ def download_list(sid):
 @app.route("/api/<url>")
 def api(url):
     data_dict = dict()
-    data_dict['add'] = True
+    data_dict['runAll'] = True
     session = Session(url)
     session.callVariations(data_dict)
     session.scan()
