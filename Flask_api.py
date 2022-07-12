@@ -32,7 +32,6 @@ else:
 
 
 app = Flask(__name__)
-app.config["DEBUG"] = True
 
 api = Api(
         app, 
@@ -56,7 +55,9 @@ def checkDomain(url):
     except Exception:
         return False
     else:
-        return True
+        if "." in url:
+            return True
+        return False
 
 
 @api.route('/domains/<sid>')
