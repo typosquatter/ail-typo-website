@@ -15,6 +15,8 @@ Website for [ail-typo-squatting](https://github.com/ail-project/ail-typo-squatti
 
 - [ail-typo-squatting](https://github.com/ail-project/ail-typo-squatting)
 
+- [idna](https://github.com/kjd/idna)
+
 
 
 ## Choice of algorithm

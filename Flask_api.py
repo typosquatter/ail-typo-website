@@ -5,6 +5,8 @@ import os
 import configparser
 import requests
 
+import idna
+
 pathConf = './conf/conf.cfg'
 
 if os.path.isfile(pathConf):
@@ -47,6 +49,16 @@ def getStatus(sid):
     """Get the status of the <sid> scan"""
     return requests.get(f'http://{FLASK_URL_SERVER}:{FLASK_PORT_SERVER}/status/{sid}').json()
 
+def checkDomain(url):
+    """Check if the domain is valid"""
+    try:
+        _ = idna.decode(url)
+    except Exception:
+        return False
+    else:
+        return True
+
+
 @api.route('/domains/<sid>')
 @api.doc(description='Request instance to get domain result and current status of the queue', params={'sid': 'id of the scan'})
 class Domains(Resource):
@@ -63,13 +75,15 @@ class Domains(Resource):
 @api.doc(description='Request instance to scan a domain', params={'url': 'url to scan'})
 class ScanUrl(Resource):
     def get(self, url):
-        r = requests.get(f'http://{FLASK_URL_SERVER}:{FLASK_PORT_SERVER}/api/{url}')
+        if checkDomain(url):
+            r = requests.get(f'http://{FLASK_URL_SERVER}:{FLASK_PORT_SERVER}/api/{url}')
 
-        if r.status_code == 200:
-            sid = r.json()['sid']
-            return sid
+            if r.status_code == 200:
+                sid = r.json()['sid']
+                return sid
             
-        return(r.json()['message'])
+            return r.json()['message']
+        return 'Domain not valid'
 
 
 if __name__ == "__main__":

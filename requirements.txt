@@ -1,3 +1,4 @@
 requests
 flask
 ail-typo-squatting
+idna
