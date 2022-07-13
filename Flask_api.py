@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_restx import Api, Resource
 
 import os
@@ -59,6 +59,15 @@ def checkDomain(url):
             return True
         return False
 
+def prepareArg(data):
+    s = '?'
+
+    for i in data:
+        s += f"{i}&"
+    s = s[:-1]
+
+    return s
+
 
 @api.route('/domains/<sid>')
 @api.doc(description='Request instance to get domain result and current status of the queue', params={'sid': 'id of the scan'})
@@ -77,13 +86,16 @@ class Domains(Resource):
 class ScanUrl(Resource):
     def get(self, url):
         if checkDomain(url):
-            r = requests.get(f'http://{FLASK_URL_SERVER}:{FLASK_PORT_SERVER}/api/{url}')
+            data = dict(request.args)
+            s = prepareArg(data)
+
+            r = requests.get(f'http://{FLASK_URL_SERVER}:{FLASK_PORT_SERVER}/api/{url}{s}')
 
             if r.status_code == 200:
                 sid = r.json()['sid']
                 return sid
             
-            return r.json()['message']
+            return r.text
         return 'Domain not valid'
 
 

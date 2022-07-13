@@ -35,6 +35,7 @@ else:
 app = Flask(__name__)
 
 sessions = list()
+algo_list = ["runAll", "charom", "rep", "trans", "repl", "dr", "inser", "add", "md", "sd", "vs", "hyph", "bs", "homog", "cm", "homoph", "wt", "addtld", "sub", "sp", "cdh"]
 
 class Session():
     def __init__(self, url):
@@ -247,10 +248,12 @@ def download_list(sid):
     return jsonify({'message': 'Scan session not found'}), 404
 
 
-@app.route("/api/<url>")
+@app.route("/api/<url>", methods=['GET'])
 def api(url):
-    data_dict = dict()
-    data_dict['runAll'] = True
+    data_dict = dict(request.args)
+    for k in data_dict.keys():
+        if k not in algo_list:
+            return jsonify({'Algorithm Error': 'The algo you want was not found'}), 400
     session = Session(url)
     session.callVariations(data_dict)
     session.scan()

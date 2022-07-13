@@ -47,6 +47,58 @@ curl http://localhost:7006/domains/<sid>
 
 
 
+### param
+
+By passing parameters to the request, it's possible to choose algorithms to run.
+
+~~~
+curl "http://localhost:7006/scan/url?charom&add"
+~~~
+
+`runAll`: run all algorithms
+
+`add`: Addition
+
+`addtld`: Add TLD
+
+`bs`: Bit-Squatting
+
+`charom`: Character Omission
+
+`cdh`: Change Dot Hyphenation
+
+`cm`: Common Misspelling
+
+`dr`: Double Replacement
+
+`homog`: Homoglyph
+
+`homoph`: Homophone
+
+`hyph`: Hyphenation
+
+`inser`: Insertion
+
+`md`: Missing Dot
+
+`rep`: Repetition
+
+`repl`: Replacement
+
+`sp`: Singulare Pluralize
+
+`sd`: Strip Dash
+
+`sub`: Subdomain
+
+`trans`: Transposition
+
+`vs`: Vowel Swap
+
+`wt`: Wrong TLD
+
+
+
 ### Output
 
 ~~~json
