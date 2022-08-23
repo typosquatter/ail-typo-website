@@ -190,6 +190,9 @@ function actionScan() {
             }if (document.getElementById("cdh").checked){
                 data_dict['cdh'] = $('#cdh').val()
                 flag = true
+            }if (document.getElementById("cho").checked){
+                data_dict['cho'] = $('#cho').val()
+                flag = true
             }
         }
 
@@ -258,6 +261,7 @@ function runAll(){
         $("#sub").prop("disabled", true)
         $("#sp").prop("disabled", true)
         $("#cdh").prop("disabled", true)
+        $("#cho").prop("disabled", true)
     }else{
         $("#charom").prop("disabled", false)
         $("#rep").prop("disabled", false)
@@ -279,5 +283,6 @@ function runAll(){
         $("#sub").prop("disabled", false)
         $("#sp").prop("disabled", false)
         $("#cdh").prop("disabled", false)
+        $("#cho").prop("disabled", false)
     }
 };

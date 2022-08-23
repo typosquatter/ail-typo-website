@@ -24,8 +24,8 @@ if 'Flask_server' in config:
     FLASK_PORT = int(config['Flask_server']['port'])
     FLASK_URL = config['Flask_server']['ip']
 else:
-    FLASK_PORT = '127.0.0.1'
-    FLASK_URL = 7005
+    FLASK_URL = '127.0.0.1'
+    FLASK_PORT = 7005
 
 if 'Thread' in config:
     num_threads = int(config['Thread']['num_threads'])
@@ -35,7 +35,7 @@ else:
 app = Flask(__name__)
 
 sessions = list()
-algo_list = ["runAll", "charom", "rep", "trans", "repl", "dr", "inser", "add", "md", "sd", "vs", "hyph", "bs", "homog", "cm", "homoph", "wt", "addtld", "sub", "sp", "cdh"]
+algo_list = ["runAll", "charom", "rep", "trans", "repl", "dr", "inser", "add", "md", "sd", "vs", "hyph", "bs", "homog", "cm", "homoph", "wt", "addtld", "sub", "sp", "cdh", "cho"]
 
 class Session():
     def __init__(self, url):
@@ -168,6 +168,8 @@ class Session():
                 self.variations_list = singularPluralize(self.url, self.variations_list, verbose=False, limit=math.inf)
             if "cdh" in all_keys:
                 self.variations_list = changeDotHyph(self.url, self.variations_list, verbose=False, limit=math.inf)
+            if "cho" in all_keys:
+                self.variations_list = changeOrder(self.url, self.variations_list, verbose=False, limit=math.inf)
 
         self.variations_list.insert(0, self.url)
         self.result = [{} for x in self.variations_list]
