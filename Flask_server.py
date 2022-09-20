@@ -47,6 +47,7 @@ class Session():
         self.variations_list = list()
         self.result = list()
         self.url = url
+        self.stopped = False
 
     def scan(self):
         """Start all worker"""
@@ -55,7 +56,7 @@ class Session():
             self.jobs.put((i, self.variations_list[i]))
         for _ in range(self.thread_count):
             worker = Thread(target=self.crawl)
-            worker.setDaemon(True)
+            worker.daemon = True
             worker.start()
             self.threads.append(worker)
 
@@ -83,9 +84,15 @@ class Session():
                 for i in range(0, len(data[work[1]]['MX'])):
                     if "localhost" in data[work[1]]['MX'][i] or len(data[work[1]]['MX'][i]) < 4:
                         loc_list.append(i)
+                    else:
+                        data[work[1]]['MX'][i] = data[work[1]]['MX'][i][:-1]
                 
                 for index in loc_list:
                     del data[work[1]]['MX'][index]
+                
+                # Parse NS record to remove end point
+                for i in range(0, len(data[work[1]]['NS'])):
+                    data[work[1]]['NS'][i] = data[work[1]]['NS'][i][:-1]
                 
                 self.result[work[0]] = data         #Store data back at correct index
             except:
@@ -107,7 +114,8 @@ class Session():
             'total': total,
             'complete': complete,
             'remaining': remaining,
-            'registered': registered
+            'registered': registered,
+            'stopped' : self.stopped
             }
 
     def stop(self):
@@ -210,6 +218,7 @@ def stop(sid):
     """Stop the <sid> queue"""
     for s in sessions:
         if s.id == sid:
+            s.stopped = True
             s.stop()
     return jsonify({})
 

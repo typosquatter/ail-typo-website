@@ -60,7 +60,10 @@ function pollScan() {
             setTimeout(pollScan, 1000);
         } else {
             sid = $('#sid').val()
-            $('#status').html('Scanned ' + data['complete'] + '</a> domains. Identified ' + data['registered'] + ' registered.');
+            if (data['stopped'])
+                $('#status').html('Stopped ! Identified ' + data['registered'] + ' registered.');
+            else
+                $('#status').html('Scanned ' + data['complete'] + ' domains. Identified ' + data['registered'] + ' registered.');
             $('#scan').text('Scan');
             $('#dropdownDownload').html(
             '<a class="btn btn-primary dropdown-toggle" href="" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Download</a>' +   
