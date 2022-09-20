@@ -24,7 +24,10 @@ function fetchDomains() {
 
                 if(j == url){
                     $('<tr>').html(
-                        '<td style="background-color: #e9ecef; vertical-align: middle; padding-left: 5px;">' + permutation + '  <a href="http://' + permutation + '" id="link" target="_blank">🔗</a></br><sup>' + variation + '</sup></td>' +
+                        '<td style="background-color: #e9ecef; vertical-align: middle; padding-left: 5px;">' + permutation + 
+                            '<button type="button" class="btn btn-light" id="original-button" onclick="addClipboard(\'' + permutation + '\')">🔗</button>' +
+                            '<a href="https://' + permutation + '" id="link" target="_blank"><i class="fa fa-external-link" aria-hidden="true"></i></a>' + 
+                            '</br><sup>' + variation + '</sup></td>' +
                         '<td style="background-color: #e9ecef; vertical-align: middle;">' + ipaddr + '</br><sup>' + geoip + '</sup></td>' +
                         '<td style="background-color: #e9ecef; vertical-align: middle;">' + dns_ns + '</td>' +
                         '<td style="background-color: #e9ecef; vertical-align: middle;">' + dns_mx + '</td>'
@@ -32,7 +35,10 @@ function fetchDomains() {
                 }
                 else{
                     $('<tr>').html(
-                        '<td style="vertical-align: middle; padding-left: 5px;">' + permutation + '  <a href="http://' + permutation + '" id="link" target="_blank">🔗</a></br><sup>' + variation + '</sup></td>' +
+                        '<td style="vertical-align: middle; padding-left: 5px;">' + permutation +
+                            '<button type="button" class="btn btn-light" onclick="addClipboard(\'' + permutation + '\')">🔗</button>' +    
+                            '<a href="https://' + permutation + '" id="link" target="_blank"><i class="fa fa-external-link" aria-hidden="true"></i></a>' +
+                            '</br><sup>' + variation + '</sup></td>' +
                         '<td style="vertical-align: middle;">' + ipaddr + '</br><sup>' + geoip + '</sup></td>' +
                         '<td style="vertical-align: middle;">' + dns_ns + '</td>' +
                         '<td style="vertical-align: middle;">' + dns_mx + '</td>'
@@ -106,7 +112,15 @@ function extractRootDomain(url) {
       }
     }
     return domain;
-  }
+}
+
+$("#alert-clip").hide();
+function addClipboard(val){
+    navigator.clipboard.writeText(val);
+    $("#alert-clip").fadeTo(2000, 500).slideUp(500, function() {
+        $("#alert-clip").slideUp(500);
+    })
+}
 
 function actionScan() {
     if (!$('#url').val()) {

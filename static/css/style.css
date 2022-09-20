@@ -158,3 +158,17 @@ transform: rotate(45deg);
 }
 
 .corner-ribbon.white{background: #f0f0f0; color: #0d6efd;}
+
+
+#alert-clip{
+    position: fixed;
+    right: 50%;
+	bottom: 1em;
+    color : #0d6efd;
+    border-color: #e9ecef;
+}
+
+#original-button{
+    background-color: #e9ecef;
+    border-color: #e9ecef;
+}
