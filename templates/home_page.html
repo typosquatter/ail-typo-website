@@ -53,7 +53,7 @@
             <div class="alert alert-light" id="alert-clip" role="alert">Copied !</div>
             <div class="collapse " id="collapseOption">
                 <div class="card card-body">
-                    <table id="advanced">
+                    <table>
                         <tr>
                             <td>
                                 <input type="checkbox" id="runAll" onclick="runAll()" value="runAll">
@@ -87,7 +87,7 @@
                             </td>
                             <td>
                                 <input type="checkbox" id="cho", value="changeorder">
-                                <label for="cdh">Change Order <i style="font-size:12px">~ 12*</i></label>
+                                <label for="cho">Change Order <i style="font-size:12px">~ 12*</i></label>
                             </td>
                         </tr>
                         <tr>
@@ -179,6 +179,7 @@
             </div>
             <table id="data"></table>
         </div>
+        <span id="source">[<a href="info">more info</a>]</span>
     </body>
 
 	<script src="{{ url_for('static',filename='js/core.js') }}"></script>

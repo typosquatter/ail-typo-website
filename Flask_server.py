@@ -33,6 +33,7 @@ else:
     num_threads = 10
 
 app = Flask(__name__)
+# app.debug = True
 
 sessions = list()
 algo_list = ["runAll", "charom", "rep", "trans", "repl", "dr", "inser", "add", "md", "sd", "vs", "hyph", "bs", "homog", "cm", "homoph", "wt", "addtld", "sub", "sp", "cdh", "cho"]
@@ -73,7 +74,10 @@ class Session():
         while not self.jobs.empty():
             work = self.jobs.get()                      #fetch new work from the Queue
             try:
-                data = dnsResolving([work[1]], self.url, "-")
+                if app.debug:
+                    data = dnsResolving([work[1]], self.url, "-", verbose=True)
+                else:
+                    data = dnsResolving([work[1]], self.url, "")
                 if 'A' in data[work[1]].keys():
                     data[work[1]]['geoip'] = self.geoIp(data[work[1]]['A'][0])
                 elif 'AAAA' in data.keys():
@@ -198,6 +202,11 @@ class Session():
 def index():
     """Home page"""
     return render_template("home_page.html")
+
+@app.route("/info")
+def info_page():
+    """Info page"""
+    return render_template("info.html")
 
 @app.route("/typo", methods=['POST'])
 def typo():

@@ -1,5 +1,6 @@
 html {
     overflow-y: scroll;
+    scroll-behavior: smooth;
 }
 body {
     font-family: -apple-system,Segoe UI,Ubuntu,Helvetica,Arial;
@@ -171,4 +172,32 @@ transform: rotate(45deg);
 #original-button{
     background-color: #e9ecef;
     border-color: #e9ecef;
+}
+
+
+
+/*Info page part*/
+h3, h5 {
+    color: #0d6efd;
+}
+
+#advanced{
+    width: 100%;
+}
+
+#advanced td{
+    padding: 10px;
+    text-align: center;
+}
+
+#fieldset-algo legend{
+    color:#0d6efd;
+}
+
+/* #fieldset-content{
+    background-color: #e9ecef;
+} */
+#fieldset-algo{
+    background-color: #e9ecef;
+
 }
