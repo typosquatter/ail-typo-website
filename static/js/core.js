@@ -161,6 +161,8 @@ function actionScan() {
         $('#data').empty();
         $('#dropdownDownload').empty();
         $('#status').empty()
+        $('#progress').text('0%');
+        $('#progress').css("width", '0%');
 
         u = $('#url').val()
         url = extractRootDomain(u)

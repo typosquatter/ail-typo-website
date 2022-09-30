@@ -14,6 +14,10 @@ from queue import Queue
 from threading import Thread
 
 
+##########
+## CONF ##
+##########
+
 pathConf = './conf/conf.cfg'
 
 if os.path.isfile(pathConf):
@@ -45,15 +49,20 @@ if 'cache' in config:
 else:
     cache_expire = 86400
 
-app = Flask(__name__)
-# app.debug = True
-
-app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
-
 sessions = list()
 
 with open("./etc/algo_list.json", "r") as read_json:
     algo_list = json.load(read_json)
+
+
+#########
+## APP ##
+#########
+
+app = Flask(__name__)
+# app.debug = True
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+
 
 
 class Session():
@@ -98,16 +107,18 @@ class Session():
     def crawl(self):
         """Threaded function for queue processing."""
         while not self.jobs.empty():
-            work = self.jobs.get()                      #fetch new work from the Queue
-            print()
+            work = self.jobs.get()   #fetch new work from the Queue
+            # print()
             try:
                 flag = False
+                ## If redis have some domains cached, don't resolve it again
                 if self.result_stopped:
                     if work[1][1] in list(self.result_stopped.keys()):
                         for domain in self.result_stopped[work[1][1]]:
                             if list(domain.keys())[0] == work[1][0]:
                                 data = domain
                                 flag = True
+                ## Redis doesn't have this domain in is db
                 if not flag:
                     if app.debug:
                         data = ail_typo_squatting.dnsResolving([work[1][0]], self.url, "-", verbose=True)
@@ -147,7 +158,7 @@ class Session():
                 self.result[work[0]] = bad_result
                 self.result_algo[work[1][1]].append(bad_result)
             finally:
-            #signal to the queue that task has been processed
+                #signal to the queue that task has been processed
                 self.jobs.task_done()
         return True
 
@@ -175,16 +186,10 @@ class Session():
         self.jobs.queue.clear()
 
         for worker in self.threads:
-            worker.join()
+            worker.join(1.5)
 
         self.threads.clear()
         self.saveInfo()
-        
-    def stopped_function(self):
-        self.stopped = True
-        for key in self.result_algo:
-            if self.result_algo[key]:
-                self.result_algo[key].append("isStopped")
 
 
     def domains(self):
@@ -230,10 +235,14 @@ class Session():
         red.expire(self.md5Url, cache_expire) # 24h
 
         for key in self.result_algo:
+            ## Check only request algo
             if self.result_algo[key]:
                 flag = False
+                ## Domain already in redis and add additionnal data to it
+                ## Normaly it's because a stop has been done previously
                 if self.add_data:
                     if red.exists(f"{self.md5Url}:{key}"):
+                        ## Load json to update it with new domain
                         algo_redis = json.loads(red.get(f"{self.md5Url}:{key}").decode())
                         for domain in self.result_algo[key]:
                             if not domain in algo_redis:
@@ -241,6 +250,8 @@ class Session():
                                 flag = True
                                 red.set(f"{self.md5Url}:{key}", json.dumps(algo_redis))
                                 red.expire(f"{self.md5Url}:{key}", cache_expire)
+
+                ## For the domain name, add algo
                 if not flag:
                     red.set(f"{self.md5Url}:{key}", json.dumps(self.result_algo[key]))
                     red.expire(f"{self.md5Url}:{key}", cache_expire)
@@ -281,6 +292,7 @@ def domains_redis(sid):
     return domain
 
 def dl_domains(sid):
+    ## redo to give algo name as key of list
     sess_info = get_session_info(sid)
     result = list()
     for key in algo_list:
