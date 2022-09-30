@@ -1,0 +1,87 @@
+{
+    "addDash": [
+        "Add Dash",
+        "Add a dash between the first and last character in a string."
+    ],
+    "addTld": [
+        "Add TLD",
+        "Add a tld before the right tld."
+    ],
+    "addition": [
+        "Addition",
+        "Add a characters in the domain name."
+    ],
+    "bitsquatting": [
+        "BitSquatting",
+        "Substituting a character with the set of valid characters that can be made after a single bit flip."
+    ],
+    "changeDotDash": [
+        "Change Dot to Dash",
+        "Change a dot to a dash."
+    ],
+    "changeOrder": [
+        "Change Order",
+        "Change the order of letters in the each part of the domain."
+    ],
+    "commonMisspelling": [
+        "Common Misspelling",
+        "Change a word by is misspelling."
+    ],
+    "doubleReplacement": [
+        "Double Replacement",
+        "Replace consecutive letters of the domain name with letters to the immediate left and right on the keyboard."
+    ],
+    "homoglyph": [
+        "Homoglyph",
+        "Replace characters to another character that look similar but are different."
+    ],
+    "homophones": [
+        "Homophones",
+        "Replace word by an other who sound the same when spoken."
+    ],
+    "keyboardInsertion": [
+        "Keyboard Insertion",
+        "Insert letters to the immediate left and right on the keyboard of each letter."
+    ],
+    "missingDot": [
+        "Missing Dot",
+        "Delete a dot from the domain name."
+    ],
+    "omission":[
+        "Omission",
+        "Leave out a letter of the domain name."
+    ],
+    "repetition": [
+        "Repetition",
+        "Repeat a letter of the domain name."
+    ],
+    "replacement": [
+        "Replacement",
+        "Replace each letter of the domain name with letters to the immediate left and right on the keyboard."
+    ],
+    "singularePluralize": [
+        "Singulare Pluralize",
+        "Make a singular domain plural and vice versa."
+    ],
+    "stripDash": [
+        "Strip Dash",
+        "Delete a dash from the domain name."
+    ],
+    "subdomain": [
+        "Subdomain",
+        "Place a dot in the domain name in order to create subdomain."
+    ],
+    "transposition": [
+        "Transposition",
+        "Swap the order of adjacent letters in the domain name."
+    ],
+    "vowelSwap": [
+        "Vowel Swap",
+        "Swap vowels within the domain name except for the first letter."
+    ],
+    "wrongTld": [
+        "Wrong TLD",
+        "Change the original top level domain to another."
+    ]
+    
+}

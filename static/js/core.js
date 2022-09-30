@@ -12,15 +12,35 @@ function fetchDomains() {
             ).appendTo('#data');
         $.each(data, function(i, item) {
             for(j in item){
-                variation = item['variation'] || ''
+                variation = item[j]['variation'] || ''
                 permutation = j || ''
-                ipaddr = [
-                    (item[j]['A'] || [''])[0],
-                    (item[j]['AAAA'] || [''])[0],
-                ].filter(Boolean).join('</br>');
+                ipv4 = (item[j]['A'] || [''])[0];
+                ipv6 = (item[j]['AAAA'] || [''])[0];
                 dns_ns = (item[j]['NS'] || [''])[0];
                 dns_mx = (item[j]['MX'] || [''])[0];
                 geoip = item[j]['geoip'] || '';
+                
+                if (item[j]['A'])
+                    ipv4length = item[j]['A'].length - 1 >= 1 ? (item[j]['A'].length - 1).toString() + ' more...' : ''
+                else
+                    ipv4length = ''
+
+                
+                if (item[j]['AAAA'])
+                    ipv6length = item[j]['AAAA'].length - 1 >= 1 ? (item[j]['AAAA'].length - 1).toString() + ' more...' : ''
+                else
+                    ipv6length = ''
+
+                if (item[j]['NS'])
+                    nslength = item[j]['NS'].length - 1 >= 1 ? (item[j]['NS'].length - 1).toString() + ' more...' : ''
+                else
+                    nslength = ''
+
+                if (item[j]['MX'])
+                    mxlength = item[j]['MX'].length - 1 >= 1 ? (item[j]['MX'].length - 1).toString() + ' more...' : ''
+                else
+                    mxlength = ''
+
 
                 if(j == url){
                     $('<tr>').html(
@@ -28,9 +48,9 @@ function fetchDomains() {
                             '<button type="button" class="btn btn-light" id="original-button" onclick="addClipboard(\'' + permutation + '\')">🔗</button>' +
                             '<a href="https://' + permutation + '" id="link" target="_blank"><i class="fa fa-external-link" aria-hidden="true"></i></a>' + 
                             '</br><sup>' + variation + '</sup></td>' +
-                        '<td style="background-color: #e9ecef; vertical-align: middle;">' + ipaddr + '</br><sup>' + geoip + '</sup></td>' +
-                        '<td style="background-color: #e9ecef; vertical-align: middle;">' + dns_ns + '</td>' +
-                        '<td style="background-color: #e9ecef; vertical-align: middle;">' + dns_mx + '</td>'
+                        '<td style="background-color: #e9ecef; vertical-align: middle;"><div>' + ipv4 + '   <span id="span_length">' + ipv4length + '</span></div><div>' + ipv6 + '   <span id="span_length">' + ipv6length + '</span></div><sup>' + geoip + '</sup></td>' +
+                        '<td style="background-color: #e9ecef; vertical-align: middle;">' + dns_ns + '   <div id="span_length">' + nslength + '</div></td>' +
+                        '<td style="background-color: #e9ecef; vertical-align: middle;">' + dns_mx + '   <div id="span_length">' + mxlength + '</div></td>'
                     ).appendTo('#data');
                 }
                 else{
@@ -39,9 +59,9 @@ function fetchDomains() {
                             '<button type="button" class="btn btn-light" onclick="addClipboard(\'' + permutation + '\')">🔗</button>' +    
                             '<a href="https://' + permutation + '" id="link" target="_blank"><i class="fa fa-external-link" aria-hidden="true"></i></a>' +
                             '</br><sup>' + variation + '</sup></td>' +
-                        '<td style="vertical-align: middle;">' + ipaddr + '</br><sup>' + geoip + '</sup></td>' +
-                        '<td style="vertical-align: middle;">' + dns_ns + '</td>' +
-                        '<td style="vertical-align: middle;">' + dns_mx + '</td>'
+                        '<td style="vertical-align: middle;"><div>' + ipv4 + '   <span id="span_length">' + ipv4length + '</span></div><div>' + ipv6 + '   <span id="span_length">' + ipv6length + '</span></div><sup>' + geoip + '</sup></td>' +
+                        '<td style="vertical-align: middle;">' + dns_ns + '   <div id="span_length">' + nslength + '</div></td>' +
+                        '<td style="vertical-align: middle;">' + dns_mx + '   <div id="span_length">' + mxlength + '</div></td>'
                     ).appendTo('#data');
                 }
             }
@@ -57,7 +77,7 @@ function pollScan() {
         $('#progress').text(pourcent + '%');
         $('#progress').css("width", pourcent + '%');
         if (data['remaining'] > 0) {
-            setTimeout(pollScan, 1000);
+            setTimeout(pollScan, 2000);
         } else {
             sid = $('#sid').val()
             if (data['stopped'])
@@ -70,7 +90,7 @@ function pollScan() {
             '<div class="dropdown-menu" aria-labelledby="dropdownMenuLink">' + 
                 '<a class="dropdown-item" href="/download/' + sid + '/list">List of Variations</a>' +
                 '<div class="dropdown-divider"></div>' +
-                '<a class="dropdown-item" href="/download/' + sid + '/json">Result as JSON</a>' +
+                '<a class="dropdown-item" href="/download/' + sid + '/json">Domain Identified</a>' +
             '</div>'
             )
         }
@@ -114,7 +134,7 @@ function extractRootDomain(url) {
         domain = splitArr[arrLen - 3] + '.' + domain;
       }
     }
-    return domain;
+    return domain.toLowerCase();
 }
 
 $("#alert-clip").hide();
@@ -124,6 +144,10 @@ function addClipboard(val){
         $("#alert-clip").slideUp(500);
     })
 }
+
+
+algo_list = ["omission", "repetition", "changeOrder", "transposition", "replacement", "doubleReplacement", "addition", "keyboardInsertion", "missingDot", "stripDash", "vowelSwap", "addDash", "bitsquatting", "homoglyph", "commonMisspelling", "homophones", "wrongTld", "addTld", "subdomain", "singularePluralize", "changeDotDash"]
+
 
 function actionScan() {
     if (!$('#url').val()) {
@@ -136,6 +160,7 @@ function actionScan() {
         $('#scan').text('⏱');
         $('#data').empty();
         $('#dropdownDownload').empty();
+        $('#status').empty()
 
         u = $('#url').val()
         url = extractRootDomain(u)
@@ -147,69 +172,11 @@ function actionScan() {
             data_dict['runAll'] = $('#runAll').val()
             flag = true
         }else{
-            if (document.getElementById("charom").checked){
-                data_dict['charom'] = $('#charom').val()
-                flag = true
-            }if (document.getElementById("rep").checked){
-                data_dict['rep'] = $('#rep').val()
-                flag = true
-            }if (document.getElementById("trans").checked){
-                data_dict['trans'] = $('#trans').val()
-                flag = true
-            }if (document.getElementById("repl").checked){
-                data_dict['repl'] = $('#repl').val()
-                flag = true
-            }if (document.getElementById("dr").checked){
-                data_dict['dr'] = $('#dr').val()
-                flag = true
-            }if (document.getElementById("inser").checked){
-                data_dict['inser'] = $('#inser').val()
-                flag = true
-            }if (document.getElementById("add").checked){
-                data_dict['add'] = $('#add').val()
-                flag = true
-            }if (document.getElementById("md").checked){
-                data_dict['md'] = $('#md').val()
-                flag = true
-            }if (document.getElementById("sd").checked){
-                data_dict['sd'] = $('#sd').val()
-                flag = true
-            }if (document.getElementById("vs").checked){
-                data_dict['vs'] = $('#vs').val()
-                flag = true
-            }if (document.getElementById("hyph").checked){
-                data_dict['hyph'] = $('#hyph').val()
-                flag = true
-            }if (document.getElementById("bs").checked){
-                data_dict['bs'] = $('#bs').val()
-                flag = true
-            }if (document.getElementById("homog").checked){
-                data_dict['homog'] = $('#homog').val()
-                flag = true
-            }if (document.getElementById("cm").checked){
-                data_dict['cm'] = $('#cm').val()
-                flag = true
-            }if (document.getElementById("homoph").checked){
-                data_dict['homoph'] = $('#homoph').val()
-                flag = true
-            }if (document.getElementById("wt").checked){
-                data_dict['wt'] = $('#wt').val()
-                flag = true
-            }if (document.getElementById("addtld").checked){
-                data_dict['addtld'] = $('#addtld').val()
-                flag = true
-            }if (document.getElementById("sub").checked){
-                data_dict['sub'] = $('#sub').val()
-                flag = true
-            }if (document.getElementById("sp").checked){
-                data_dict['sp'] = $('#sp').val()
-                flag = true
-            }if (document.getElementById("cdh").checked){
-                data_dict['cdh'] = $('#cdh').val()
-                flag = true
-            }if (document.getElementById("cho").checked){
-                data_dict['cho'] = $('#cho').val()
-                flag = true
+            for( i=0; i< algo_list.length; i++){
+                if (document.getElementById(algo_list[i]).checked){
+                    data_dict[algo_list[i]] = $('#' + algo_list[i]).val()
+                    flag = true
+                }
             }
         }
 
@@ -258,48 +225,12 @@ $('#url').on('keypress',function(e) {
 
 function runAll(){
     if (document.getElementById("runAll").checked){
-        $("#charom").prop("disabled", true)
-        $("#rep").prop("disabled", true)
-        $("#trans").prop("disabled", true)
-        $("#repl").prop("disabled", true)
-        $("#dr").prop("disabled", true)
-        $("#inser").prop("disabled", true)
-        $("#add").prop("disabled", true)
-        $("#md").prop("disabled", true)
-        $("#sd").prop("disabled", true)
-        $("#vs").prop("disabled", true)
-        $("#hyph").prop("disabled", true)
-        $("#bs").prop("disabled", true)
-        $("#homog").prop("disabled", true)
-        $("#cm").prop("disabled", true)
-        $("#homoph").prop("disabled", true)
-        $("#wt").prop("disabled", true)
-        $("#addtld").prop("disabled", true)
-        $("#sub").prop("disabled", true)
-        $("#sp").prop("disabled", true)
-        $("#cdh").prop("disabled", true)
-        $("#cho").prop("disabled", true)
+        for( i=0; i< algo_list.length; i++){
+            $('#' + algo_list[i]).prop('checked', true);
+        }
     }else{
-        $("#charom").prop("disabled", false)
-        $("#rep").prop("disabled", false)
-        $("#trans").prop("disabled", false)
-        $("#repl").prop("disabled", false)
-        $("#dr").prop("disabled", false)
-        $("#inser").prop("disabled", false)
-        $("#add").prop("disabled", false)
-        $("#md").prop("disabled", false)
-        $("#sd").prop("disabled", false)
-        $("#vs").prop("disabled", false)
-        $("#hyph").prop("disabled", false)
-        $("#bs").prop("disabled", false)
-        $("#homog").prop("disabled", false)
-        $("#cm").prop("disabled", false)
-        $("#homoph").prop("disabled", false)
-        $("#wt").prop("disabled", false)
-        $("#addtld").prop("disabled", false)
-        $("#sub").prop("disabled", false)
-        $("#sp").prop("disabled", false)
-        $("#cdh").prop("disabled", false)
-        $("#cho").prop("disabled", false)
+        for( i=0; i< algo_list.length; i++){
+            $('#' + algo_list[i]).prop('checked', false);
+        }
     }
 };

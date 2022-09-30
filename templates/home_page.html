@@ -24,14 +24,17 @@
         </div>
 
         <div id="container">
+            <div id="top"></div>
             <div>
                 <header>
                     <h1><img id="logo" src="{{ url_for('static',filename='image/ail-typosquatting.png') }}"></h1>
                     <p>Typo-Squatting finder</p>
                 </header>
+                <!-- <div id="intro">Enter a domain name to brute force Typo-Squatting</div> -->
+                <div id="intro"></div>
                 <div id="searchbox">
                     <input type="hidden" id="sid">
-                    <input type="text" id="url" placeholder="Enter domain name" autofocus>
+                    <input type="text" id="url" placeholder="Enter a domain name to brute force Typo-Squatting" autofocus>
                     <button id="scan">Scan</button>
                 </div>
                 <div class="progress">
@@ -48,7 +51,6 @@
                       Advanced
                     </a>
                 </p>
-                
             </div>
             <div class="alert alert-light" id="alert-clip" role="alert">Copied !</div>
             <div class="collapse " id="collapseOption">
@@ -57,129 +59,42 @@
                         <tr>
                             <td>
                                 <input type="checkbox" id="runAll" onclick="runAll()" value="runAll">
-                                <label for="runAll">Run all algorithm</label>
+                                <label for="runAll" title="Used to run all algorithms that can be run">Run all algorithm</label>
                             </td>
                             <td>
-                                <input type="checkbox" id="add", value="addition">
-                                <label for="add">Addition <i style="font-size:12px">~ 37*</i></label>
+                                <input type="checkbox" id={{keys[0]}} value={{keys[0]}}>
+                                <label for={{keys[0]}} title="{{algo_list[keys[0]][1]}}">{{ algo_list[keys[0]][0] }} <i style="font-size:12px">~ 37*</i></label>
                             </td>
                             <td>
-                                <input type="checkbox" id="addtld", value="addTld">
-                                <label for="addtld">Add TLD <i style="font-size:12px">~ 1489*</i></label>
+                                <input type="checkbox" id={{keys[1]}} value={{keys[1]}}>
+                                <label for={{keys[1]}} title="{{algo_list[keys[1]][1]}}">{{ algo_list[keys[1]][0] }} <i style="font-size:12px">~ 1489*</i></label>
                             </td>
                         </tr>
-                        <tr>
-                            <td><i style="font-size:12px">*numbers of variations based on "circl.lu" domain</i></td>
-                            <td>
-                                <input type="checkbox" id="bs", value="bitsquatting">
-                                <label for="bs">BitSquatting <i style="font-size:12px">~ 26*</i></label>
-                            </td>
-                            <td>
-                                <input type="checkbox" id="charom" value="characterOmission">
-                                <label for="charom">Character Omission <i style="font-size:12px">~ 6*</i></label>
-                            </td>
-                        </tr>
+                        {% for i in range(2, len_table, 2)%}
                         <tr>
                             <td></td>
                             <td>
-                                <input type="checkbox" id="cdh", value="changedothyphenation">
-                                <label for="cdh">Change Dot Hyphenation <i style="font-size:12px">~ 1489*</i></label>
+                                <input type="checkbox" id={{keys[i]}} value={{keys[i]}}>
+                                <label for={{keys[i]}} title="{{algo_list[keys[i]][1]}}">{{algo_list[keys[i]][0]}}</label>
                             </td>
-                            <td>
-                                <input type="checkbox" id="cho", value="changeorder">
-                                <label for="cho">Change Order <i style="font-size:12px">~ 12*</i></label>
-                            </td>
+
+                            {% if i + 1 < len_table %}
+                                <td>
+                                    <input type="checkbox" id={{keys[i+1]}} value={{keys[i+1]}}>
+                                    <label for={{keys[i+1]}} title="{{algo_list[keys[i+1]][1]}}">{{algo_list[keys[i+1]][0]}}</label>
+                                </td>
+                            {% else %}
+                                <td></td>
+                            {%endif%}
                         </tr>
-                        <tr>
-                            <td></td>
-                            <td>
-                                <input type="checkbox" id="cm", value="commonMisspelling">
-                                <label for="cm">Common Misspelling <i style="font-size:12px">~ 1*</i></label>
-                            </td>
-                            <td>
-                                <input type="checkbox" id="dr", value="doubleReplacement">
-                                <label for="dr">Double Replacement <i style="font-size:12px">~ 25*</i></label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>
-                                <input type="checkbox" id="homog", value="homoglyph">
-                                <label for="homog">Homoglyph <i style="font-size:12px">~ 1283*</i></label>
-                            </td>
-                            <td>
-                                <input type="checkbox" id="homoph", value="homophone">
-                                <label for="homoph">Homophone <i style="font-size:12px">~ 1*</i></label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>
-                                <input type="checkbox" id="hyph", value="hyphenation">
-                                <label for="hyph">Hyphenation <i style="font-size:12px">~ 5*</i></label>
-                            </td>
-                            <td>
-                                <input type="checkbox" id="inser", value="insertion">
-                                <label for="inser">Insertion <i style="font-size:12px">~ 31*</i></label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>
-                                <input type="checkbox" id="md", value="missingDot">
-                                <label for="md">Missing Dot <i style="font-size:12px">~ 3*</i></label>
-                            </td>
-                            <td>
-                                <input type="checkbox" id="rep", value="repetition">
-                                <label for="rep">Repetition <i style="font-size:12px">~ 6*</i></label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>
-                                <input type="checkbox" id="repl", value="replacement">
-                                <label for="repl">Replacement <i style="font-size:12px">~ 25*</i></label>
-                            </td>
-                            <td>
-                                <input type="checkbox" id="sp", value="singularpluralize">
-                                <label for="sp">Singular Pluralize <i style="font-size:12px">~ 2*</i></label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>
-                                <input type="checkbox" id="sd", value="stripDash">
-                                <label for="sd">Strip Dash <i style="font-size:12px">~ 1*</i></label>
-                            </td>
-                            <td>
-                                <input type="checkbox" id="sub", value="subdomain">
-                                <label for="sub">Subdomain <i style="font-size:12px">~ 5*</i></label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>
-                                <input type="checkbox" id="trans", value="transposition">
-                                <label for="transposition">Transposition <i style="font-size:12px">~ 5*</i></label>
-                            </td>
-                            <td>
-                                <input type="checkbox" id="vs", value="vowelSwap">
-                                <label for="vs">Vowel Swap <i style="font-size:12px">~ 6*</i></label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>
-                                <input type="checkbox" id="wt", value="wrongTld">
-                                <label for="wt">Wrong TLD <i style="font-size:12px">~ 1488*</i></label>
-                            </td>
-                        </tr>
+                        {{algo}}
+                        {%endfor%}
                     </table>
                 </div>
             </div>
             <table id="data"></table>
+            <span id="source">[<a href="#top">Go Back Top</a>]</span>
         </div>
-        <span id="source">[<a href="info">more info</a>]</span>
     </body>
 
 	<script src="{{ url_for('static',filename='js/core.js') }}"></script>

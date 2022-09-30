@@ -8,3 +8,11 @@ port = 7006
 
 [Thread]
 num_threads = 10
+
+[redis]
+host = 127.0.0.1
+port = 6379
+db = 0
+
+[cache]
+expire = 86400

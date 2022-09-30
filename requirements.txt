@@ -1,4 +1,6 @@
 requests
 flask
+flask-restx
 ail-typo-squatting
 idna
+redis
