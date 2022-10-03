@@ -77,6 +77,7 @@ class Session():
         self.stopped = False
         self.result_stopped = dict()
         self.add_data = False
+        self.request_algo = list()
 
         self.result_algo = dict()
         for key in list(algo_list.keys()):
@@ -201,10 +202,12 @@ class Session():
         """Generate variations by options"""
         all_keys = data_dict.keys()
         if "runAll" in all_keys:
+            self.request_algo = algo_list
             self.variations_list = ail_typo_squatting.runAll(self.url, math.inf, 'txt', "-", givevariations=True)
         else:
             for key in all_keys:
                 if key in list(algo_list.keys()):
+                    self.request_algo.append(key)
                     fun = getattr(ail_typo_squatting, key)
                     self.variations_list = fun(self.url, self.variations_list, verbose=False, limit=math.inf, givevariations=True)
 
@@ -228,6 +231,7 @@ class Session():
         saveInfo['variations_list'] = self.variations_list
         saveInfo['stopped'] = self.stopped
         saveInfo['md5Url'] = self.md5Url
+        saveInfo['request_algo'] = self.request_algo
 
         red.set(self.id, json.dumps(saveInfo))
         red.expire(self.id, 3600) # 1h
@@ -292,12 +296,22 @@ def domains_redis(sid):
     return domain
 
 def dl_domains(sid):
-    ## redo to give algo name as key of list
     sess_info = get_session_info(sid)
-    result = list()
-    for key in algo_list:
+    request_algo = sess_info["request_algo"]
+    result = dict()
+    for key in request_algo:
         if red.exists(f"{sess_info['md5Url']}:{key}"):
-            result.append(red.get(f"{sess_info['md5Url']}:{key}").decode())
+            result[key] = list()
+            loc_list = json.loads(red.get(f"{sess_info['md5Url']}:{key}").decode())
+
+            for x in loc_list:
+                for e in x:
+                    if not x[e]["NotExist"]:
+                        result[key].append(x)
+
+            if not result[key]:
+                del result[key]
+
     return result
 
 def dl_list(sid):
@@ -316,7 +330,10 @@ def get_algo_from_redis(data_dict, md5Url):
         request_algo = list(algo_list.keys())
     else:
         request_algo = list(data_dict.keys())
-        request_algo.remove('url')
+        try:
+            request_algo.remove('url')
+        except:
+            pass
 
     for algo in request_algo:
         if red.exists(f"{md5Url}:{algo}"):
@@ -337,7 +354,7 @@ def index():
 @app.route("/info")
 def info_page():
     """Info page"""
-    return render_template("info.html")
+    return render_template("info.html", algo_list=algo_list, len_table=len(list(algo_list.keys())), keys=list(algo_list.keys()))
 
 @app.route("/about")
 def about_page():
@@ -404,7 +421,6 @@ def download_json(sid):
     """Give the result as json format"""
     if red.exists(sid):
         sess_info = get_session_info(sid)
-        print(dl_domains(sid))
         return jsonify(dl_domains(sid)), 200, {'Content-Disposition': f'attachment; filename=typo-squatting-{sess_info["url"]}.json'}
     else:
         for s in sessions:
