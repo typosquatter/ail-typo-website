@@ -63,11 +63,11 @@
                             </td>
                             <td>
                                 <input type="checkbox" id={{keys[0]}} value={{keys[0]}}>
-                                <label for={{keys[0]}} title="{{algo_list[keys[0]][1]}}">{{ algo_list[keys[0]][0] }} <i style="font-size:12px">~ 37*</i></label>
+                                <label for={{keys[0]}} title="{{algo_list[keys[0]][1]}}">{{ algo_list[keys[0]][0] }}</label>
                             </td>
                             <td>
                                 <input type="checkbox" id={{keys[1]}} value={{keys[1]}}>
-                                <label for={{keys[1]}} title="{{algo_list[keys[1]][1]}}">{{ algo_list[keys[1]][0] }} <i style="font-size:12px">~ 1489*</i></label>
+                                <label for={{keys[1]}} title="{{algo_list[keys[1]][1]}}">{{ algo_list[keys[1]][0] }}</label>
                             </td>
                         </tr>
                         {% for i in range(2, len_table, 2)%}
@@ -87,13 +87,17 @@
                                 <td></td>
                             {%endif%}
                         </tr>
-                        {{algo}}
                         {%endfor%}
+                        <tr>
+                            <td><span id="source">[<a href="info" target="_blank">more info</a>]</span></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
                     </table>
                 </div>
             </div>
             <table id="data"></table>
-            <span id="source">[<a href="#top">Go Back Top</a>]</span>
+            <span id="goTop">[<a href="#top">Go Back Top</a>]</span>
         </div>
     </body>
 

@@ -43,83 +43,33 @@
                                 <a href="#runAll">Run all algorithm</a>
                             </td>
                             <td>
-                                <a href="#add">Addition</a>
+                                <a href={{'#'+keys[0]}}>{{ algo_list[keys[0]][0] }}</a>
                             </td>
                             <td>
-                                <a href="#addtld">Add TLD</a>
+                                <a href={{'#'+keys[1]}}>{{ algo_list[keys[1]][0] }}</a>
                             </td>
                         </tr>
+                        {% for i in range(2, len_table, 3)%}
                         <tr>
                             <td>
-                                <a href="#bs">BitSquatting</a>
+                                <a href={{'#'+keys[i]}}>{{ algo_list[keys[i]][0] }}</a>
                             </td>
-                            <td>
-                                <a href="#charom">Character Omission</a>
-                            </td>
-                            <td>
-                                <a href="#cdh">Change Dot Hyphenation</a>
-                            </td>
+                            {% if i + 1 < len_table %}
+                                <td>
+                                    <a href={{'#'+keys[i+1]}}>{{ algo_list[keys[i+1]][0] }}</a>
+                                </td>
+                            {% else %}
+                                <td></td>
+                            {%endif%}
+                            {% if i + 2 < len_table %}
+                                <td>
+                                    <a href={{'#'+keys[i+2]}}>{{ algo_list[keys[i+2]][0] }}</a>
+                                </td>
+                            {% else %}
+                                <td></td>
+                            {%endif%}
                         </tr>
-                        <tr>
-                            <td>
-                                <a href="#cho">Change Order</a>
-                            </td>
-                            <td>
-                                <a href="#cm">Common Misspelling</a>
-                            </td>
-                            <td>
-                                <a href="#dr">Double Replacement</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <a href="#homog">Homoglyph</a>
-                            </td>
-                            <td>
-                                <a href="#homoph">Homophone</a>
-                            </td>
-                            <td>
-                                <a href="#hyph">Hyphenation</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <a href="#inser">Insertion</a>
-                            </td>
-                            <td>
-                                <a href="#md">Missing Dot</a>
-                            </td>
-                            <td>
-                                <a href="#rep">Repetition</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <a href="#repl">Replacement</a>
-                            </td>
-                            <td>
-                                <a href="#sp">Singular Pluralize</a>
-                            </td>
-                            <td>
-                                <a href="#sd">Strip Dash</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <a href="#sub">Subdomain</a>
-                            </td>
-                            <td>
-                                <a href="#transposition">Transposition</a>
-                            </td>
-                            <td>
-                                <a href="#vs">Vowel Swap</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <a href="#wt">Wrong TLD</a>
-                            </td>
-                        </tr>
+                        {%endfor%}
                     </table>
                 </fieldset>
 
@@ -132,174 +82,16 @@
                     </fieldset>
                 </div>
                 <br/><br/>
-                <hr>
-                <div id="add">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Addition</legend>
-                        <div id="fieldset-content">These typos are created by add a characters in the domain name.</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="addtld">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Add TLD</legend>
-                        <div id="fieldset-content">These typos are created by adding a tld before the right tld. Example: google.com becomes google.com.it</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="bs">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">BitSquatting</legend>
-                        <div id="fieldset-content">These typos are created by substituting a character with the set of valid characters that can be made after a single bit flip. For example, facebook.com becomes bacebook.com, dacebook.com, faaebook.com,fabebook.com,facabook.com, etc.</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="charom">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Character Omission</legend>
-                        <div id="fieldset-content">These typos are created by leaving out a letter of the domain name, one letter at a time.</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="cdh">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Change Dot Hyphenation</legend>
-                        <div id="fieldset-content">These typos are created by changing a dot to a dash.</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="cho">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Change Order</legend>
-                        <div id="fieldset-content">These typos are created by changing the order of letters in the each part of the domain.</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="cm">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Common Misspelling</legend>
-                        <div id="fieldset-content">These typos are created by changing a word by is misspelling. Over 8000 common misspellings from Wikipedia. For example, www.youtube.com becomes www.youtub.com and www.abseil.com becomes www.absail.com</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="dr">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Double Replacement</legend>
-                        <div id="fieldset-content">These typos are created by replacing identical, consecutive letters of the domain name with letters to the immediate left and right on the keyboard.</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="homog">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Homoglyph</legend>
-                        <div id="fieldset-content">These typos are created by replacing characters to another character that look similar but are different.  An example is that the lower case l looks similar to the numeral one, e.g. l vs 1. For example, google.com becomes goog1e.com.</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="homoph">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Homophone</legend>
-                        <div id="fieldset-content">These typos are created by changing word by an other who sound the same when spoken. Over 450 sets of words that sound the same when spoken. For example, www.base.com becomes www.bass.com.</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="hyph">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Hyphenation</legend>
-                        <div id="fieldset-content">These typos are created by adding a hypen `-` between the first and last character in a string.</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="inser">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Insertion</legend>
-                        <div id="fieldset-content">These typos are created by inserting letters to the immediate left and right on the keyboard of each letter.</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="md">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Missing Dot</legend>
-                        <div id="fieldset-content">These typos are created by omitting a dot from the domain name.</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="rep">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Repetition</legend>
-                        <div id="fieldset-content">These typos are created by repeating a letter of the domain name.</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="repl">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Replacement</legend>
-                        <div id="fieldset-content">These typos are created by replacing each letter of the domain name with letters to the immediate left and right on the keyboard. (QWERTY, AZERTY, QWERTZ, DVORAK).</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="sp">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Singular Pluralize</legend>
-                        <div id="fieldset-content">These typos are created by making a singular domain plural and vice versa.</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="sd">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Strip Dash</legend>
-                        <div id="fieldset-content">These typos are created by omitting a dash from the domain name.</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="sub">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Subdomain</legend>
-                        <div id="fieldset-content">These typos are created by placing a dot in the domain name in order to create subdomain. Example: google.com becomes goo.gle.com.</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="transposition">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Transposition</legend>
-                        <div id="fieldset-content">These typos are created by swapping the order of adjacent letters in the domain name.</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="vs">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Vowel Swap</legend>
-                        <div id="fieldset-content">These typos are created by swapping vowels within the domain name except for the first letter. For example, www.google.com becomes www.gaagle.com.</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
-                <hr>
-                <div id="wt">
-                    <fieldset class="border p-2" id="fieldset-algo">
-                        <legend  class="float-none w-auto p-2">Wrong TLD</legend>
-                        <div id="fieldset-content">These typos are created by changing the original top level domain to another. For example, www.trademe.co.nz becomes www.trademe.co.mz and www.google.com becomes www.google.org Uses the 19 most common top level domains.</div>
-                    </fieldset>
-                </div>
-                <br/><br/>
+                {%for i in range(0, len_table)%}
+                    <hr>
+                    <div id={{keys[i]}}>
+                        <fieldset class="border p-2" id="fieldset-algo">
+                            <legend  class="float-none w-auto p-2">{{ algo_list[keys[i]][0] }}</legend>
+                            <div id="fieldset-content">{{ algo_list[keys[i]][2] }}</div>
+                        </fieldset>
+                    </div>
+                    <br/><br/>
+                {%endfor%}
                 <hr>
 
                 <br/><br/><br/><br/>

@@ -118,10 +118,16 @@ a#link {
     text-decoration: none;
 }
 span#source {
-    position: fixed;
+    /* position: fixed; */
     right: 1em;
     bottom: 1em;
     background-color: #fafbfc;
+}
+span#goTop{
+   position: fixed;
+   right: 1em;
+   bottom: 1em;
+   background-color: #fafbfc; 
 }
 @media (max-width: 800px) {
     body, table, span {

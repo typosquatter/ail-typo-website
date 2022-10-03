@@ -77,7 +77,7 @@ function pollScan() {
         $('#progress').text(pourcent + '%');
         $('#progress').css("width", pourcent + '%');
         if (data['remaining'] > 0) {
-            setTimeout(pollScan, 2000);
+            setTimeout(pollScan, 3000);
         } else {
             sid = $('#sid').val()
             if (data['stopped'])
