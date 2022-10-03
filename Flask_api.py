@@ -44,10 +44,6 @@ api = Api(
     )
 
 
-def getStatus(sid):
-    """Get the status of the <sid> scan"""
-    return requests.get(f'http://{FLASK_URL_SERVER}:{FLASK_PORT_SERVER}/status/{sid}').json()
-
 def checkDomain(url):
     """Check if the domain is valid"""
     try:
@@ -60,6 +56,8 @@ def checkDomain(url):
         return False
 
 def prepareArg(data):
+    if not data:
+        return '?runAll'
     s = '?'
 
     for i in data:
@@ -74,7 +72,7 @@ def prepareArg(data):
 class Domains(Resource):
     def get(self, sid):
         domain = requests.get(f'http://{FLASK_URL_SERVER}:{FLASK_PORT_SERVER}/domains/{sid}').json()
-        status = getStatus(sid)
+        status = requests.get(f'http://{FLASK_URL_SERVER}:{FLASK_PORT_SERVER}/status/{sid}').json()
         
         if not type(domain) == dict:
             domain.append(status)
@@ -97,6 +95,13 @@ class ScanUrl(Resource):
             
             return r.text
         return 'Domain not valid'
+
+@api.route('/stop/<sid>')
+@api.doc(description='Stop the current request', params={'sid': 'id of the scan'})
+class Stop(Resource):
+    def get(self, sid):
+        stop = requests.get(f'http://{FLASK_URL_SERVER}:{FLASK_PORT_SERVER}/stop/{sid}').json()
+        return jsonify(stop)
 
 
 if __name__ == "__main__":

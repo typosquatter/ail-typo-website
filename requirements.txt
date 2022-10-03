@@ -1,6 +1,7 @@
 requests
-flask
+flask==2.1.2
 flask-restx
+werkzeug==2.1.2
 ail-typo-squatting
 idna
 redis

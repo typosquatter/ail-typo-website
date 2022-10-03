@@ -381,7 +381,7 @@ def typo():
     return jsonify(session.status()), 201
     
 
-@app.route("/stop/<sid>", methods=['POST'])
+@app.route("/stop/<sid>", methods=['POST', 'GET'])
 def stop(sid):
     """Stop the <sid> queue"""
     for s in sessions:
@@ -389,7 +389,7 @@ def stop(sid):
             s.stopped = True
             s.stop()
             break
-    return jsonify({})
+    return jsonify({"Stop": "Successful"}), 200
 
 
 @app.route("/status/<sid>")
@@ -449,10 +449,18 @@ def download_list(sid):
 @app.route("/api/<url>", methods=['GET'])
 def api(url):
     data_dict = dict(request.args)
+    loc_algo_list = list(algo_list.keys())
+    loc_algo_list.append("runAll")
     for k in data_dict.keys():
-        if k not in algo_list:
+        if k not in loc_algo_list:
             return jsonify({'Algorithm Error': 'The algo you want was not found'}), 400
+
+    md5Url = hashlib.md5(url.encode()).hexdigest()
     session = Session(url)
+
+    if red.exists(md5Url):
+        session.result_stopped = get_algo_from_redis(data_dict, md5Url)
+
     session.callVariations(data_dict)
     session.scan()
     sessions.append(session)
