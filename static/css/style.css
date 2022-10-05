@@ -129,6 +129,7 @@ span#goTop{
    bottom: 1em;
    background-color: #fafbfc; 
 }
+
 @media (max-width: 800px) {
     body, table, span {
         font-size: 75%;
@@ -171,6 +172,14 @@ left: auto;
 transform: rotate(45deg);
 -webkit-transform: rotate(45deg);
 }
+
+.corner-ribbon.bottom-left{
+    top: auto;
+    bottom: 25px;
+    left: -50px;
+    transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+  }
 
 .corner-ribbon.white{background: #f0f0f0; color: #0d6efd;}
 

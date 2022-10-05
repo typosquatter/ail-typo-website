@@ -74,7 +74,7 @@
         "Replace each letter of the domain name with letters to the immediate left and right on the keyboard.",
         "These typos are created by replacing each letter of the domain name with letters to the immediate left and right on the keyboard. (QWERTY, AZERTY, QWERTZ, DVORAK)"
     ],
-    "singularePluralize": [
+    "singularPluralize": [
         "Singulare Pluralize",
         "Make a singular domain plural and vice versa.",
         "These typos are created by making a singular domain plural and vice versa."

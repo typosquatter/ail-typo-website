@@ -203,15 +203,14 @@ class Session():
         all_keys = data_dict.keys()
         if "runAll" in all_keys:
             self.request_algo = algo_list
-            self.variations_list = ail_typo_squatting.runAll(self.url, math.inf, 'txt', "-", givevariations=True)
+            self.variations_list = ail_typo_squatting.runAll(self.url, math.inf, 'txt', "-", verbose=False, givevariations=True, keeporiginal=True)
         else:
             for key in all_keys:
                 if key in list(algo_list.keys()):
                     self.request_algo.append(key)
                     fun = getattr(ail_typo_squatting, key)
-                    self.variations_list = fun(self.url, self.variations_list, verbose=False, limit=math.inf, givevariations=True)
+                    self.variations_list = fun(self.url, self.variations_list, verbose=False, limit=math.inf, givevariations=True, keeporiginal=True)
 
-        self.variations_list.insert(0, [self.url, "original"])
         self.result = [{} for x in self.variations_list]
 
     def dl_list(self):
