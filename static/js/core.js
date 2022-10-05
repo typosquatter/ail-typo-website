@@ -4,12 +4,13 @@ url = ''
 function fetchDomains() {
     $.getJSON('/domains/' + $('#sid').val(), function(data) {
         $('#data').empty();
-        $('<tr>').html(
-                '<th>PERMUTATION</th>' +
-                '<th>IP ADDRESS</th>' +
-                '<th>NAME SERVER</th>' +
-                '<th>MAIL SERVER</th>'
-            ).appendTo('#data');
+        $('<tr>').append(
+            $('<th>').text("PERMUTATION"),
+            $('<th>').text("IP ADDRESS"),
+            $('<th>').text("NAME SERVER"),
+            $('<th>').text("MAIL SERVER"),
+        ).appendTo('#data')
+
         $.each(data, function(i, item) {
             for(j in item){
                 variation = item[j]['variation'] || ''
@@ -43,26 +44,66 @@ function fetchDomains() {
 
 
                 if(j == url){
-                    $('<tr>').html(
-                        '<td style="background-color: #e9ecef; vertical-align: middle; padding-left: 5px;">' + permutation + 
-                            '<button type="button" class="btn btn-light" id="original-button" onclick="addClipboard(\'' + permutation + '\')">🔗</button>' +
-                            '<a href="https://' + permutation + '" id="link" target="_blank"><i class="fa fa-external-link" aria-hidden="true"></i></a>' + 
-                            '</br><sup>' + variation + '</sup></td>' +
-                        '<td style="background-color: #e9ecef; vertical-align: middle;"><div>' + ipv4 + '   <span id="span_length">' + ipv4length + '</span></div><div>' + ipv6 + '   <span id="span_length">' + ipv6length + '</span></div><sup>' + geoip + '</sup></td>' +
-                        '<td style="background-color: #e9ecef; vertical-align: middle;">' + dns_ns + '   <div id="span_length">' + nslength + '</div></td>' +
-                        '<td style="background-color: #e9ecef; vertical-align: middle;">' + dns_mx + '   <div id="span_length">' + mxlength + '</div></td>'
-                    ).appendTo('#data');
+                    $('<tr>').append(
+                        $("<td>").text(permutation).css({"background-color": "#e9ecef", "vertical-align": "middle", "padding-left": "5px"}).append(
+                            $("<button>").text('🔗').attr({onclick: 'addClipboard(\'' + permutation + '\')', id: "original-button", type: "button", class: "btn btn-light", title: "Copy this domain to clipboard"}),
+                            $('<a>').attr({id: 'link', target: '_blank', href: "https://" + permutation, title: "Go to webpage"}).append(
+                                $('<i>').attr({class: "fa fa-external-link", "aria-hidden": "true"})
+                            ),
+                            $('</br>'),
+                            $('<sup>').text(variation)
+                        ),
+                        $("<td>").css({"background-color": "#e9ecef", "vertical-align": "middle"}).append(
+                            $("<div>").append(
+                                ipv4,
+                                $("<span>").attr("id", "span_length").text("   " + ipv4length)
+                            ),
+                            $("<div>").append(
+                                ipv6,
+                                $("<span>").attr("id", "span_length").text("   " + ipv6length)
+                            ),
+                            $('<sup>').text(geoip)
+                        ),
+                        $("<td>").css({"background-color": "#e9ecef", "vertical-align": "middle"}).append(
+                            dns_ns,
+                            $("<div>").attr("id", "span_length").text(nslength)
+                        ),
+                        $("<td>").css({"background-color": "#e9ecef", "vertical-align": "middle"}).append(
+                            dns_mx,
+                            $("<div>").attr("id", "span_length").text(mxlength)
+                        )
+                    ).appendTo('#data')
                 }
                 else{
-                    $('<tr>').html(
-                        '<td style="vertical-align: middle; padding-left: 5px;">' + permutation +
-                            '<button type="button" class="btn btn-light" onclick="addClipboard(\'' + permutation + '\')">🔗</button>' +    
-                            '<a href="https://' + permutation + '" id="link" target="_blank"><i class="fa fa-external-link" aria-hidden="true"></i></a>' +
-                            '</br><sup>' + variation + '</sup></td>' +
-                        '<td style="vertical-align: middle;"><div>' + ipv4 + '   <span id="span_length">' + ipv4length + '</span></div><div>' + ipv6 + '   <span id="span_length">' + ipv6length + '</span></div><sup>' + geoip + '</sup></td>' +
-                        '<td style="vertical-align: middle;">' + dns_ns + '   <div id="span_length">' + nslength + '</div></td>' +
-                        '<td style="vertical-align: middle;">' + dns_mx + '   <div id="span_length">' + mxlength + '</div></td>'
-                    ).appendTo('#data');
+                    $('<tr>').append(
+                        $("<td>").text(permutation).css({"vertical-align": "middle", "padding-left": "5px"}).append(
+                            $("<button>").text('🔗').attr({onclick: 'addClipboard(\'' + permutation + '\')', type: "button", class: "btn btn-light"}),
+                            $('<a>').attr({id: 'link', target: '_blank', href: "https://" + permutation}).append(
+                                $('<i>').attr({class: "fa fa-external-link", "aria-hidden": "true"})
+                            ),
+                            $('</br>'),
+                            $('<sup>').text(variation)
+                        ),
+                        $("<td>").css({"vertical-align": "middle"}).append(
+                            $("<div>").append(
+                                ipv4,
+                                $("<span>").attr("id", "span_length").text("   " + ipv4length)
+                            ),
+                            $("<div>").append(
+                                ipv6,
+                                $("<span>").attr("id", "span_length").text("   " + ipv6length)
+                            ),
+                            $('<sup>').text(geoip)
+                        ),
+                        $("<td>").css({"vertical-align": "middle"}).append(
+                            dns_ns,
+                            $("<div>").attr("id", "span_length").text(nslength)
+                        ),
+                        $("<td>").css({"vertical-align": "middle"}).append(
+                            dns_mx,
+                            $("<div>").attr("id", "span_length").text(mxlength)
+                        )
+                    ).appendTo('#data')
                 }
             }
             
@@ -73,7 +114,7 @@ function fetchDomains() {
 function pollScan() {
     $.getJSON('/status/' + $('#sid').val(), function(data) {
         pourcent = Math.round((data['complete']/data['total'])*100)
-        $('#status').html('Processed ' + data['complete'] + ' of ' + data['total']);
+        $('#status').text('Processed ' + data['complete'] + ' of ' + data['total']);
         $('#progress').text(pourcent + '%');
         $('#progress').css("width", pourcent + '%');
         if (data['remaining'] > 0) {
@@ -81,17 +122,17 @@ function pollScan() {
         } else {
             sid = $('#sid').val()
             if (data['stopped'])
-                $('#status').html('Stopped ! Identified ' + data['registered'] + ' registered.');
+                $('#status').text('Stopped ! Identified ' + data['registered'] + ' registered.');
             else
-                $('#status').html('Scanned ' + data['complete'] + ' domains. Identified ' + data['registered'] + ' registered.');
+                $('#status').text('Scanned ' + data['complete'] + ' domains. Identified ' + data['registered'] + ' registered.');
             $('#scan').text('Scan');
-            $('#dropdownDownload').html(
-            '<a class="btn btn-primary dropdown-toggle" href="" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Download</a>' +   
-            '<div class="dropdown-menu" aria-labelledby="dropdownMenuLink">' + 
-                '<a class="dropdown-item" href="/download/' + sid + '/list">List of Variations</a>' +
-                '<div class="dropdown-divider"></div>' +
-                '<a class="dropdown-item" href="/download/' + sid + '/json">Domain Identified</a>' +
-            '</div>'
+            $('#dropdownDownload').append(
+                $('<a>').attr({class: "btn btn-primary dropdown-toggle", href: "", role: "button", id: "dropdownMenuLink", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false"}).text("Download"),
+                $('<div>').attr({class: "dropdown-menu", "aria-labelledby": "dropdownMenuLink"}).append(
+                    $('<a>').attr({class: "dropdown-item", href: "/download/" + sid + "/list"}).text("List of Variations"),
+                    $('<div>').attr("class", "dropdown-divider"),
+                    $('<a>').attr({class: "dropdown-item", href: "/download/" + sid + "/json"}).text("Domain Identified")
+                )
             )
         }
         if (last_registered < data['registered']) {
@@ -137,7 +178,12 @@ function extractRootDomain(url) {
     return domain.toLowerCase();
 }
 
-$("#alert-clip").hide();
+function validDomain(domain) {
+    const regex = new RegExp('^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$');
+    return regex.test(domain)
+}
+
+
 function addClipboard(val){
     navigator.clipboard.writeText(val);
     $("#alert-clip").fadeTo(2000, 500).slideUp(500, function() {
@@ -145,13 +191,20 @@ function addClipboard(val){
     })
 }
 
+$(document).ready(function() {
+    $("#alert-clip").hide();
+})
 
-algo_list = ["omission", "repetition", "changeOrder", "transposition", "replacement", "doubleReplacement", "addition", "keyboardInsertion", "missingDot", "stripDash", "vowelSwap", "addDash", "bitsquatting", "homoglyph", "commonMisspelling", "homophones", "wrongTld", "addTld", "subdomain", "singularePluralize", "changeDotDash"]
+algo_list = ["omission", "repetition", "changeOrder", "transposition", "replacement", "doubleReplacement", "addition", "keyboardInsertion", "missingDot", "stripDash", "vowelSwap", "addDash", "bitsquatting", "homoglyph", "commonMisspelling", "homophones", "wrongTld", "addTld", "subdomain", "singularPluralize", "changeDotDash"]
 
 
 function actionScan() {
     if (!$('#url').val()) {
-        $('#status').html('↖ You need to type in a domain name first');
+        $('#status').text('↖ You need to type in a domain name first');
+        return
+    }
+    if (!validDomain($('#url').val())){
+        $('#status').text('↖ Please enter a valid domain name');
         return
     }
 
@@ -199,7 +252,7 @@ function actionScan() {
             },
             error: function(xhr, status, error) {
                 $('#scan').text('Scan');
-                $('#status').html(xhr.responseJSON['message'] || 'Something went wrong');
+                $('#status').text(xhr.responseJSON['message'] || 'Something went wrong');
             },
         });
     } else {
