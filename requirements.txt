@@ -5,3 +5,5 @@ werkzeug==2.1.2
 ail-typo-squatting
 idna
 redis
+pyfaup
+chardet

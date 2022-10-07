@@ -11,11 +11,18 @@ Website for [ail-typo-squatting](https://github.com/ail-project/ail-typo-squatti
 
 - [requests](https://github.com/psf/requests)
 
-- [flask](https://flask.palletsprojects.com/en/2.1.x/)
+- [flask](https://flask.palletsprojects.com/en/2.1.x/) == 2.1.2
+
+- [flask-restx](https://github.com/python-restx/flask-restx)
+  - [werkzeug](https://github.com/pallets/werkzeug/) == 2.1.2
 
 - [ail-typo-squatting](https://github.com/ail-project/ail-typo-squatting)
 
 - [idna](https://github.com/kjd/idna)
+
+- [redis](https://github.com/redis/redis-py)
+
+- [pyfaup](https://github.com/stricaud/faup)
 
 
 
@@ -55,47 +62,32 @@ By passing parameters to the request, it's possible to choose algorithms to run.
 curl "http://localhost:7006/scan/url?charom&add"
 ~~~
 
-`runAll`: run all algorithms
+- `runAll`
 
-`add`: Addition
+- `addDash`
 
-`addtld`: Add TLD
+- `addTld`
+- `addition`
 
-`bs`: Bit-Squatting
+- `bitsquatting`
+- `changeDotDash`
 
-`charom`: Character Omission
-
-`cdh`: Change Dot Hyphenation
-
-`cm`: Common Misspelling
-
-`dr`: Double Replacement
-
-`homog`: Homoglyph
-
-`homoph`: Homophone
-
-`hyph`: Hyphenation
-
-`inser`: Insertion
-
-`md`: Missing Dot
-
-`rep`: Repetition
-
-`repl`: Replacement
-
-`sp`: Singulare Pluralize
-
-`sd`: Strip Dash
-
-`sub`: Subdomain
-
-`trans`: Transposition
-
-`vs`: Vowel Swap
-
-`wt`: Wrong TLD
+- `changeOrder`
+- `commonMisspelling`
+- `doubleReplacement`
+- `homoglyph`
+- `homophones`
+- `keyboardInsertion`
+- `missingDot`
+- `omission`
+- `repetition`
+- `replacement`
+- `singularPluralize`
+- `stripDash`
+- `subdomain`
+- `transposition`
+- `vowelSwap`
+- `wrongTld`
 
 
 

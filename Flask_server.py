@@ -13,6 +13,10 @@ import requests
 from queue import Queue
 from threading import Thread
 
+from pyfaup.faup import Faup
+
+faup = Faup()
+
 
 ##########
 ## CONF ##
@@ -366,6 +370,16 @@ def typo():
     """Run the scan"""
     data_dict = request.json["data_dict"]
     url = data_dict["url"]
+
+    faup.decode(url)
+    if faup.get_tld():
+        url = faup.get_host()
+    else:
+        return jsonify({'message': 'Domain not valid'}), 400
+    
+    if len(url.split(".")) > 4:
+        return jsonify({'message': 'Domain is too long'}), 400
+
     md5Url = hashlib.md5(url.encode()).hexdigest()
 
     session = Session(url)
