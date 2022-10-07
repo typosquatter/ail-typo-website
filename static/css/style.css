@@ -1,3 +1,7 @@
+/*
+* Inspired from https://github.com/elceef/dnstwist/blob/master/webapp/webapp.html
+*/
+
 html {
     overflow-y: scroll;
     scroll-behavior: smooth;
@@ -47,6 +51,9 @@ header p {
 }
 #intro {
     margin: 4em 0 0.5em 0;
+    color: #777;
+}
+#intro2 {
     color: #777;
 }
 div#searchbox {

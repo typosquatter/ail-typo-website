@@ -207,6 +207,10 @@ function actionScan() {
         $('#status').text('↖ Please enter a valid domain name');
         return
     }
+    if ($('#url').val().split('.').length > 4){
+        $('#status').text('↖ Domain is too long');
+        return
+    }
 
     if ($('#scan').text() == 'Scan') {
         last_registered = 0;
@@ -217,8 +221,9 @@ function actionScan() {
         $('#progress').text('0%');
         $('#progress').css("width", '0%');
 
-        u = $('#url').val()
-        url = extractRootDomain(u)
+        url = $('#url').val()
+        // url = extractRootDomain(u)
+
         
         data_dict = {}
         data_dict['url'] = url
@@ -246,6 +251,7 @@ function actionScan() {
             }),
             contentType: 'application/json',
             success: function(data) {
+                $('#intro2').hide()
                 $('#sid').val(data['id']);
                 $('#scan').text('Stop');
                 pollScan();
