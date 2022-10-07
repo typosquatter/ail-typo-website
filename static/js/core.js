@@ -124,8 +124,8 @@ function pollScan() {
             if (data['stopped'])
                 $('#status').text('Stopped ! Identified ' + data['registered'] + ' registered.');
             else
-                $('#status').text('Scanned ' + data['complete'] + ' domains. Identified ' + data['registered'] + ' registered.');
-            $('#scan').text('Scan');
+                $('#status').text('Found ' + data['complete'] + ' domains. Identified ' + data['registered'] + ' registered.');
+            $('#scan').text('Search');
             $('#dropdownDownload').append(
                 $('<a>').attr({class: "btn btn-primary dropdown-toggle", href: "", role: "button", id: "dropdownMenuLink", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false"}).text("Download"),
                 $('<div>').attr({class: "dropdown-menu", "aria-labelledby": "dropdownMenuLink"}).append(
@@ -212,7 +212,7 @@ function actionScan() {
         return
     }
 
-    if ($('#scan').text() == 'Scan') {
+    if ($('#scan').text() == 'Search') {
         last_registered = 0;
         $('#scan').text('⏱');
         $('#data').empty();
@@ -257,7 +257,7 @@ function actionScan() {
                 pollScan();
             },
             error: function(xhr, status, error) {
-                $('#scan').text('Scan');
+                $('#scan').text('Search');
                 $('#status').text(xhr.responseJSON['message'] || 'Something went wrong');
             },
         });
@@ -267,7 +267,7 @@ function actionScan() {
             url: '/stop/' + $('#sid').val(),
             contentType: 'application/json',
             success: function() {
-                $('#scan').text('Scan');
+                $('#scan').text('Search');
             }
         });
     }
