@@ -10,6 +10,7 @@ function fetchDomains() {
             $('<th>').text("NAME SERVER"),
             $('<th>').text("MAIL SERVER"),
         ).appendTo('#data')
+        $('<tr>').attr("id", "last_line").appendTo("#data")
 
         $.each(data, function(i, item) {
             for(j in item){
@@ -44,7 +45,7 @@ function fetchDomains() {
 
 
                 if(j == url){
-                    $('<tr>').append(
+                    $("#last_line").before($('<tr>').append(
                         $("<td>").text(permutation).css({"background-color": "#e9ecef", "vertical-align": "middle", "padding-left": "5px"}).append(
                             $("<button>").text('🔗').attr({onclick: 'addClipboard(\'' + permutation + '\')', id: "original-button", type: "button", class: "btn btn-light", title: "Copy this domain to clipboard"}),
                             $('<a>').attr({id: 'link', target: '_blank', href: "https://" + permutation, title: "Go to webpage"}).append(
@@ -72,38 +73,72 @@ function fetchDomains() {
                             dns_mx,
                             $("<div>").attr("id", "span_length").text(mxlength)
                         )
-                    ).appendTo('#data')
+                    ))
                 }
                 else{
-                    $('<tr>').append(
-                        $("<td>").text(permutation).css({"vertical-align": "middle", "padding-left": "5px"}).append(
-                            $("<button>").text('🔗').attr({onclick: 'addClipboard(\'' + permutation + '\')', type: "button", class: "btn btn-light"}),
-                            $('<a>').attr({id: 'link', target: '_blank', href: "https://" + permutation}).append(
-                                $('<i>').attr({class: "fa fa-external-link", "aria-hidden": "true"})
+                    if (item[j]["majestic_million"]){
+                        $("#last_line").after($('<tr>').append(
+                            $("<td>").css({"vertical-align": "middle", "padding-left": "5px"}).append(
+                                "✅ ",
+                                permutation,
+                                $("<button>").text('🔗').attr({onclick: 'addClipboard(\'' + permutation + '\')', type: "button", class: "btn btn-light"}).css({"background-color": "#ffffff"}),
+                                $('<a>').attr({id: 'link', target: '_blank', href: "https://" + permutation}).append(
+                                    $('<i>').attr({class: "fa fa-external-link", "aria-hidden": "true"})
+                                ),
+                                $('</br>'),
+                                $('<sup>').text(variation)
                             ),
-                            $('</br>'),
-                            $('<sup>').text(variation)
-                        ),
-                        $("<td>").css({"vertical-align": "middle"}).append(
-                            $("<div>").append(
-                                ipv4,
-                                $("<span>").attr("id", "span_length").text("   " + ipv4length)
+                            $("<td>").css({"vertical-align": "middle"}).append(
+                                $("<div>").append(
+                                    ipv4,
+                                    $("<span>").attr("id", "span_length").text("   " + ipv4length)
+                                ),
+                                $("<div>").append(
+                                    ipv6,
+                                    $("<span>").attr("id", "span_length").text("   " + ipv6length)
+                                ),
+                                $('<sup>').text(geoip)
                             ),
-                            $("<div>").append(
-                                ipv6,
-                                $("<span>").attr("id", "span_length").text("   " + ipv6length)
+                            $("<td>").css({"vertical-align": "middle"}).append(
+                                dns_ns,
+                                $("<div>").attr("id", "span_length").text(nslength)
                             ),
-                            $('<sup>').text(geoip)
-                        ),
-                        $("<td>").css({"vertical-align": "middle"}).append(
-                            dns_ns,
-                            $("<div>").attr("id", "span_length").text(nslength)
-                        ),
-                        $("<td>").css({"vertical-align": "middle"}).append(
-                            dns_mx,
-                            $("<div>").attr("id", "span_length").text(mxlength)
+                            $("<td>").css({"vertical-align": "middle"}).append(
+                                dns_mx,
+                                $("<div>").attr("id", "span_length").text(mxlength)
+                            ))
                         )
-                    ).appendTo('#data')
+                    }else{
+                        $("#last_line").before($('<tr>').append(
+                            $("<td>").text(permutation).css({"vertical-align": "middle", "padding-left": "5px"}).append(
+                                $("<button>").text('🔗').attr({onclick: 'addClipboard(\'' + permutation + '\')', type: "button", class: "btn btn-light"}).css({"background-color": "#ffffff"}),
+                                $('<a>').attr({id: 'link', target: '_blank', href: "https://" + permutation}).append(
+                                    $('<i>').attr({class: "fa fa-external-link", "aria-hidden": "true"})
+                                ),
+                                $('</br>'),
+                                $('<sup>').text(variation)
+                            ),
+                            $("<td>").css({"vertical-align": "middle"}).append(
+                                $("<div>").append(
+                                    ipv4,
+                                    $("<span>").attr("id", "span_length").text("   " + ipv4length)
+                                ),
+                                $("<div>").append(
+                                    ipv6,
+                                    $("<span>").attr("id", "span_length").text("   " + ipv6length)
+                                ),
+                                $('<sup>').text(geoip)
+                            ),
+                            $("<td>").css({"vertical-align": "middle"}).append(
+                                dns_ns,
+                                $("<div>").attr("id", "span_length").text(nslength)
+                            ),
+                            $("<td>").css({"vertical-align": "middle"}).append(
+                                dns_mx,
+                                $("<div>").attr("id", "span_length").text(mxlength)
+                            )
+                        ))
+                    }
                 }
             }
             

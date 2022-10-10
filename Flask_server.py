@@ -58,6 +58,13 @@ sessions = list()
 with open("./etc/algo_list.json", "r") as read_json:
     algo_list = json.load(read_json)
 
+r = requests.get("https://raw.githubusercontent.com/MISP/misp-warninglists/main/lists/majestic_million/list.json")
+
+majestic_million = r.json()['list']
+
+# with open("./etc/majestic_million.json", 'r') as read_json:
+#     majestic_million = json.load(read_json)['list']
+
 
 #########
 ## APP ##
@@ -136,22 +143,29 @@ class Session():
                         data[work[1][0]]['geoip'] = self.geoIp(data[work[1][0]]['AAAA'][0])  
 
                     # Delete empty MX records
-                    loc_list = list()
-                    for i in range(0, len(data[work[1][0]]['MX'])):
-                        if "localhost" in data[work[1][0]]['MX'][i] or len(data[work[1][0]]['MX'][i]) < 4:
-                            loc_list.append(i)
-                        else:
-                            data[work[1][0]]['MX'][i] = data[work[1][0]]['MX'][i][:-1]
-                    
-                    for index in loc_list:
-                        del data[work[1][0]]['MX'][index]
-                    
-                    # Parse NS record to remove end point
-                    for i in range(0, len(data[work[1][0]]['NS'])):
-                        data[work[1][0]]['NS'][i] = data[work[1][0]]['NS'][i][:-1]
+                    if 'MX' in list(data[work[1][0]].keys()):
+                        loc_list = list()
+                        for i in range(0, len(data[work[1][0]]['MX'])):
+                            if "localhost" in data[work[1][0]]['MX'][i] or len(data[work[1][0]]['MX'][i]) < 4:
+                                loc_list.append(i)
+                            else:
+                                data[work[1][0]]['MX'][i] = data[work[1][0]]['MX'][i][:-1]
+                        
+                        for index in loc_list:
+                            del data[work[1][0]]['MX'][index]
+
+                    if 'NS' in list(data[work[1][0]].keys()):
+                        # Parse NS record to remove end point
+                        for i in range(0, len(data[work[1][0]]['NS'])):
+                            data[work[1][0]]['NS'][i] = data[work[1][0]]['NS'][i][:-1]
 
                     data[work[1][0]]['variation'] = work[1][1]
                     self.add_data = True
+
+                    if work[1][0] in majestic_million:
+                        data[work[1][0]]['majestic_million'] = True
+                    else:
+                        data[work[1][0]]['majestic_million'] = False
                     
                 self.result[work[0]] = data         #Store data back at correct index
                 self.result_algo[work[1][1]].append(data)
