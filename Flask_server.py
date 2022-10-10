@@ -7,6 +7,7 @@ import os
 import json
 import redis
 import hashlib
+from datetime import datetime
 
 import requests
 
@@ -45,8 +46,10 @@ else:
 
 if 'redis' in config:
     red = redis.Redis(host=config['redis']['host'], port=config['redis']['port'], db=config['redis']['db'])
+    red_user = redis.Redis(host=config['redis']['host'], port=config['redis']['port'], db=10)
 else:
     red = redis.Redis(host='localhost', port=6379, db=2)
+    red = redis.Redis(host='localhost', port=6379, db=10)
 
 if 'cache' in config:
     cache_expire = config['cache']['expire']
@@ -358,6 +361,39 @@ def get_algo_from_redis(data_dict, md5Url):
     return result_list
 
 
+def set_info(domain, request):
+    ip = request.remote_addr
+    user_agent = str(request.user_agent)
+    now = datetime.now()
+    dt_string = now.strftime("%Y/%m/%d %H:%M:%S")
+
+    if red_user.exists(ip):
+        current_data = json.loads(red_user.get(ip).decode())
+        if not user_agent in current_data['user_agent']:
+            current_data['user_agent'].append(user_agent)
+
+        flag = False
+        
+        for i in range(0, len(current_data['domain'])):
+            if domain in list(current_data['domain'][i].keys()):
+                current_data['domain'][i][domain] = int(current_data['domain'][i][domain]) + 1
+                flag = True
+        if not flag:
+            current_data['domain'].append({domain: 1})
+
+        current_data['nb_request'] = int(current_data['nb_request']) + 1
+        current_data['last_request'] = dt_string
+
+        red_user.set(ip, json.dumps(current_data))
+    else:
+        export_data = dict()
+        export_data['user_agent'] = [user_agent]
+        export_data['nb_request'] = 1
+        export_data['domain'] = [{domain: 1}]
+        export_data['last_request'] = dt_string
+
+        red_user.set(ip, json.dumps(export_data))
+
 
 ###############
 # FLASK ROUTE #
@@ -393,6 +429,8 @@ def typo():
     
     if len(url.split(".")) > 4:
         return jsonify({'message': 'Domain is too long'}), 400
+
+    set_info(url, request)
 
     md5Url = hashlib.md5(url.encode()).hexdigest()
 
