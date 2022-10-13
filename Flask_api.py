@@ -19,16 +19,12 @@ else:
 if 'Flask_api' in config:
     FLASK_PORT = int(config['Flask_api']['port'])
     FLASK_URL = config['Flask_api']['ip']
+    url_to_server = config['Flask_api']['url_to_server']
 else:
     FLASK_PORT = '127.0.0.1'
     FLASK_URL = 7006
+    url_to_server = "https://typosquatting-finder.circl.lu"
 
-if 'Flask_server' in config:
-    FLASK_PORT_SERVER = int(config['Flask_server']['port'])
-    FLASK_URL_SERVER = config['Flask_server']['ip']
-else:
-    FLASK_PORT_SERVER = '127.0.0.1'
-    FLASK_URL_SERVER = 7005
 
 
 app = Flask(__name__)
@@ -71,8 +67,8 @@ def prepareArg(data):
 @api.doc(description='Request instance to get domain result and current status of the queue', params={'sid': 'id of the scan'})
 class Domains(Resource):
     def get(self, sid):
-        domain = requests.get(f'http://{FLASK_URL_SERVER}:{FLASK_PORT_SERVER}/domains/{sid}').json()
-        status = requests.get(f'http://{FLASK_URL_SERVER}:{FLASK_PORT_SERVER}/status/{sid}').json()
+        domain = requests.get(f'{url_to_server}/domains/{sid}').json()
+        status = requests.get(f'{url_to_server}/status/{sid}').json()
         
         if not type(domain) == dict:
             domain.append(status)
@@ -87,7 +83,7 @@ class ScanUrl(Resource):
             data = dict(request.args)
             s = prepareArg(data)
 
-            r = requests.get(f'http://{FLASK_URL_SERVER}:{FLASK_PORT_SERVER}/api/{url}{s}')
+            r = requests.get(f'{url_to_server}/api/{url}{s}')
 
             if r.status_code == 200:
                 sid = r.json()['sid']
@@ -100,7 +96,7 @@ class ScanUrl(Resource):
 @api.doc(description='Stop the current request', params={'sid': 'id of the scan'})
 class Stop(Resource):
     def get(self, sid):
-        stop = requests.get(f'http://{FLASK_URL_SERVER}:{FLASK_PORT_SERVER}/stop/{sid}').json()
+        stop = requests.get(f'{url_to_server}/stop/{sid}').json()
         return jsonify(stop)
 
 
