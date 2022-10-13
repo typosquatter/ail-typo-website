@@ -46,28 +46,35 @@ else:
 
 if 'redis' in config:
     red = redis.Redis(host=config['redis']['host'], port=config['redis']['port'], db=config['redis']['db'])
-    red_user = redis.Redis(host=config['redis']['host'], port=config['redis']['port'], db=10)
 else:
-    red = redis.Redis(host='localhost', port=6379, db=2)
-    red = redis.Redis(host='localhost', port=6379, db=10)
+    red = redis.Redis(host='localhost', port=6379, db=0)
+
+if 'redis_user' in config:
+    red_user = redis.Redis(host=config['redis_user']['host'], port=config['redis_user']['port'], db=config['redis_user']['db'])
+else:
+    red_user = redis.Redis(host='localhost', port=6379, db=1)
+
+if 'redis_warning_list' in config:
+    redis_warning_list = redis.Redis(host=config['redis_warning_list']['host'], port=config['redis_warning_list']['port'], db=config['redis_warning_list']['db'])
+else:
+    redis_warning_list = redis.Redis(host='localhost', port=6379, db=2)
 
 if 'cache' in config:
     cache_expire = config['cache']['expire']
 else:
     cache_expire = 86400
 
+
 sessions = list()
 
 with open("./etc/algo_list.json", "r") as read_json:
     algo_list = json.load(read_json)
 
-r = requests.get("https://raw.githubusercontent.com/MISP/misp-warninglists/main/lists/majestic_million/list.json")
 
-majestic_million = r.json()['list']
-
-# with open("./etc/majestic_million.json", 'r') as read_json:
-#     majestic_million = json.load(read_json)['list']
-
+if redis_warning_list.exists('majestic_million'):
+    majestic_million = True
+else:
+    majestic_million = False
 
 #########
 ## APP ##
@@ -132,6 +139,9 @@ class Session():
                         for domain in self.result_stopped[work[1][1]]:
                             if list(domain.keys())[0] == work[1][0]:
                                 data = domain
+                                if majestic_million:
+                                    if redis_warning_list.zrank('majestic_million', work[1][0]):
+                                        data[work[1][0]]['majestic_million'] = True
                                 flag = True
                 ## Redis doesn't have this domain in is db
                 if not flag:
@@ -165,10 +175,10 @@ class Session():
                     data[work[1][0]]['variation'] = work[1][1]
                     self.add_data = True
 
-                    if work[1][0] in majestic_million:
-                        data[work[1][0]]['majestic_million'] = True
-                    else:
-                        data[work[1][0]]['majestic_million'] = False
+                    if majestic_million:
+                        if redis_warning_list.zrank('majestic_million', work[1][0]):
+                            data[work[1][0]]['majestic_million'] = True
+
                     
                 self.result[work[0]] = data         #Store data back at correct index
                 self.result_algo[work[1][1]].append(data)
@@ -318,6 +328,7 @@ def domains_redis(sid):
 def dl_domains(sid):
     sess_info = get_session_info(sid)
     request_algo = sess_info["request_algo"]
+    request_algo.insert(0, 'original')
     result = dict()
     for key in request_algo:
         if red.exists(f"{sess_info['md5Url']}:{key}"):
@@ -350,6 +361,7 @@ def get_algo_from_redis(data_dict, md5Url):
         request_algo = list(algo_list.keys())
     else:
         request_algo = list(data_dict.keys())
+        request_algo.insert(0, 'original')
         try:
             request_algo.remove('url')
         except:

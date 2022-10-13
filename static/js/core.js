@@ -79,10 +79,10 @@ function fetchDomains() {
                     if (item[j]["majestic_million"]){
                         $("#last_line").after($('<tr>').append(
                             $("<td>").css({"vertical-align": "middle", "padding-left": "5px"}).append(
-                                "✅ ",
+                                $('<b>').text("✅ ").attr({title: "This domain is present in the top 100000 of the most visited websites"}),
                                 permutation,
-                                $("<button>").text('🔗').attr({onclick: 'addClipboard(\'' + permutation + '\')', type: "button", class: "btn btn-light"}).css({"background-color": "#ffffff"}),
-                                $('<a>').attr({id: 'link', target: '_blank', href: "https://" + permutation}).append(
+                                $("<button>").text('🔗').attr({onclick: 'addClipboard(\'' + permutation + '\')', type: "button", class: "btn btn-light", title: "Copy this domain to clipboard"}).css({"background-color": "#ffffff"}),
+                                $('<a>').attr({id: 'link', target: '_blank', href: "https://" + permutation, title: "Go to webpage"}).append(
                                     $('<i>').attr({class: "fa fa-external-link", "aria-hidden": "true"})
                                 ),
                                 $('</br>'),
@@ -111,8 +111,8 @@ function fetchDomains() {
                     }else{
                         $("#last_line").before($('<tr>').append(
                             $("<td>").text(permutation).css({"vertical-align": "middle", "padding-left": "5px"}).append(
-                                $("<button>").text('🔗').attr({onclick: 'addClipboard(\'' + permutation + '\')', type: "button", class: "btn btn-light"}).css({"background-color": "#ffffff"}),
-                                $('<a>').attr({id: 'link', target: '_blank', href: "https://" + permutation}).append(
+                                $("<button>").text('🔗').attr({onclick: 'addClipboard(\'' + permutation + '\')', type: "button", class: "btn btn-light", title: "Copy this domain to clipboard"}).css({"background-color": "#ffffff"}),
+                                $('<a>').attr({id: 'link', target: '_blank', href: "https://" + permutation, title: "Go to webpage"}).append(
                                     $('<i>').attr({class: "fa fa-external-link", "aria-hidden": "true"})
                                 ),
                                 $('</br>'),
