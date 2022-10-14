@@ -242,10 +242,6 @@ function actionScan() {
         $('#status').text('↖ Please enter a valid domain name');
         return
     }
-    if ($('#url').val().split('.').length > 4){
-        $('#status').text('↖ Domain is too long');
-        return
-    }
 
     if ($('#scan').text() == 'Search') {
         last_registered = 0;
