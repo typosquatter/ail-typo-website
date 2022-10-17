@@ -327,7 +327,7 @@ def domains_redis(sid):
 
 def dl_domains(sid):
     sess_info = get_session_info(sid)
-    request_algo = sess_info["request_algo"]
+    request_algo = list(sess_info["request_algo"].keys())
     request_algo.insert(0, 'original')
     result = dict()
     for key in request_algo:
@@ -352,6 +352,7 @@ def dl_list(sid):
     for variation in sess_info["variations_list"]:
         s += variation[0] + '\n'
     return s
+
 
 def get_algo_from_redis(data_dict, md5Url):
     request_algo = list()
