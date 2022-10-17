@@ -233,8 +233,8 @@ class Session():
         """Generate variations by options"""
         all_keys = data_dict.keys()
         if "runAll" in all_keys:
-            self.request_algo = algo_list
-            self.variations_list = ail_typo_squatting.runAll(self.url, math.inf, 'txt', "-", verbose=False, givevariations=True, keeporiginal=True)
+            self.request_algo = list(algo_list.keys())
+            self.variations_list = ail_typo_squatting.runAll(self.url, math.inf, 'txt', "", verbose=False, givevariations=True, keeporiginal=True)
         else:
             for key in all_keys:
                 if key in list(algo_list.keys()):
@@ -327,7 +327,7 @@ def domains_redis(sid):
 
 def dl_domains(sid):
     sess_info = get_session_info(sid)
-    request_algo = list(sess_info["request_algo"].keys())
+    request_algo = sess_info["request_algo"]
     request_algo.insert(0, 'original')
     result = dict()
     for key in request_algo:
