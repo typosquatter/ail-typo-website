@@ -7,3 +7,4 @@ idna
 redis
 pyfaup
 chardet
+pymisp

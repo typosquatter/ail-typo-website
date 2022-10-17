@@ -166,7 +166,10 @@ function pollScan() {
                 $('<div>').attr({class: "dropdown-menu", "aria-labelledby": "dropdownMenuLink"}).append(
                     $('<a>').attr({class: "dropdown-item", href: "/download/" + sid + "/list"}).text("List of Variations"),
                     $('<div>').attr("class", "dropdown-divider"),
-                    $('<a>').attr({class: "dropdown-item", href: "/download/" + sid + "/json"}).text("Domain Identified")
+                    $('<a>').attr({class: "dropdown-item", href: "/download/" + sid + "/json"}).text("Domain Identified"),
+                    $('<div>').attr("class", "dropdown-divider"),
+                    $('<a>').attr({class: "dropdown-item", href: "/download/" + sid + "/misp-feed"}).text("Misp Feed"),
+                    $('<a>').attr({class: "dropdown-item", href: "/download/" + sid + "/misp-json"}).text("Misp Json")
                 )
             )
         }

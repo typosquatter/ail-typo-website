@@ -27,3 +27,6 @@ db = 2
 
 [cache]
 expire = 86400
+
+[cache_session]
+expire = 3600

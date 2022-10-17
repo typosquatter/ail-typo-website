@@ -8,11 +8,16 @@ import json
 import redis
 import hashlib
 from datetime import datetime
+import re
+
+from typing import List
 
 import requests
 
 from queue import Queue
 from threading import Thread
+
+from pymisp import MISPEvent, MISPObject, MISPOrganisation
 
 from pyfaup.faup import Faup
 
@@ -63,6 +68,11 @@ if 'cache' in config:
     cache_expire = config['cache']['expire']
 else:
     cache_expire = 86400
+
+if 'cache_session' in config:
+    cache_expire_session = config['cache_session']['expire']
+else:
+    cache_expire_session = 3600
 
 
 sessions = list()
@@ -264,9 +274,9 @@ class Session():
         saveInfo['request_algo'] = self.request_algo
 
         red.set(self.id, json.dumps(saveInfo))
-        red.expire(self.id, 3600) # 1h
+        red.expire(self.id, cache_expire_session)
         red.set(self.md5Url, 1)
-        red.expire(self.md5Url, cache_expire) # 24h
+        red.expire(self.md5Url, cache_expire)
 
         for key in self.result_algo:
             ## Check only request algo
@@ -294,6 +304,84 @@ class Session():
             del self
         except:
             pass
+
+    def dl_misp_feed():
+        return
+
+
+##########
+## MISP ##
+##########
+
+def create_misp_event(sid):
+    sess_info = get_session_info(sid)
+
+    org = MISPOrganisation()
+    org.name = "typosquatting-finder.circl.lu"
+    org.uuid = "8df15512-0314-4c2a-bd00-9334ab9b59e6"
+
+    event = MISPEvent()
+
+    event.info = sess_info['url']  # Required
+    event.distribution = 0  # Optional, defaults to MISP.default_event_distribution in MISP config
+    event.threat_level_id = 4  # Optional, defaults to MISP.default_event_threat_level in MISP config
+    event.analysis = 2  # Optional, defaults to 0 (initial analysis)
+    event.Orgc = org
+
+    return event
+
+
+def feed_meta_generator(event, sid):
+    manifests = {}
+    hashes: List[str] = []
+
+    manifests.update(event.manifest)
+    hashes += [f'{h},{event.uuid}' for h in event.attributes_hashes('md5')]
+
+    red.set(f"event_manifest:{sid}", json.dumps(manifests))
+    red.set(f"event_hashes:{sid}", json.dumps(hashes))
+
+    red.expire(f"event_manifest:{sid}", cache_expire_session)
+    red.expire(f"event_hashes:{sid}", cache_expire_session)
+
+
+def dl_misp_feed(sid, store=True):
+    event = create_misp_event(sid)
+    result_list = dl_domains(sid)
+
+    misp_object = MISPObject('dns-record', standalone=False)
+
+    for algo in result_list:
+        for i in range(0, len(result_list[algo])):
+            for domain in result_list[algo][i]:
+                misp_object = MISPObject('dns-record', standalone=False)
+                qname = misp_object.add_attribute('queried-domain', value=domain)
+                qname.add_tag({'name': f"typosquatting:{algo}", 'colour': "#e68b48"})
+
+                if 'A' in result_list[algo][i][domain].keys():
+                    for a in result_list[algo][i][domain]['A']:
+                        misp_object.add_attribute('a-record', value=a)
+                if 'AAAA' in result_list[algo][i][domain].keys():
+                    for aaaa in result_list[algo][i][domain]['AAAA']:
+                        misp_object.add_attribute('aaaa-record', value=aaaa)
+                if 'MX' in result_list[algo][i][domain].keys():
+                    for mx in result_list[algo][i][domain]['MX']:
+                        misp_object.add_attribute('mx-record', value=mx)
+                if 'NS' in result_list[algo][i][domain].keys():
+                    for ns in result_list[algo][i][domain]['NS']:
+                        misp_object.add_attribute('ns-record', value=ns)
+
+                event.add_object(misp_object)
+
+    feed_event = event.to_feed()
+
+    if store:
+        red.set(f"event_json:{sid}", json.dumps(feed_event))
+        red.expire(f"event_json:{sid}", cache_expire_session) # 1h
+
+        return event
+        
+    return feed_event
 
 
 
@@ -518,6 +606,45 @@ def download_list(sid):
             if s.id == sid:
                 return s.dl_list(), 200, {'Content-Type': 'text/plain', 'Content-Disposition': f'attachment; filename={s.url}-variations.txt'}
     return jsonify({'message': 'Scan session not found'}), 404
+
+
+#############
+## MISP DL ##
+#############
+
+@app.route("/download/<sid>/misp-feed")
+def download_misp_feed(sid):
+    """Give the list of variations"""
+    if red.exists(sid):
+        event = dl_misp_feed(sid, store=True)
+        feed_meta_generator(event, sid)
+
+        html = f'<a href="/download/{sid}/misp-feed/{event.uuid}.json">{event.uuid}.json</a>'
+        html += f'<br /><a href="/download/{sid}/misp-feed/hashes.csv">hashes.csv</a>'
+        html += f'<br /><a href="/download/{sid}/misp-feed/manifest.json">manifest.json</a>'
+
+        return html
+    return jsonify({"message": "Session not found"}), 404
+
+@app.route("/download/<sid>/misp-feed/<file>")
+def download_misp(sid, file):
+    if file == 'hashes.csv':
+        return jsonify(json.loads(red.get(f"event_hashes:{sid}").decode())), 200
+    elif file == 'manifest.json':
+        return jsonify(json.loads(red.get(f"event_manifest:{sid}").decode())), 200
+    elif re.match(r"^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$", file.split('.')[0]):
+        event = json.loads(red.get(f"event_json:{sid}").decode())
+        if file.split('.')[0] == event['Event']['uuid']:
+            return jsonify(json.loads(red.get(f"event_json:{sid}").decode())), 200
+        else:
+            return jsonify({'message': 'File not exist'})
+    else:
+        return jsonify({'message': 'File not exist'})
+
+@app.route("/download/<sid>/misp-json")
+def download_misp_json(sid):
+    event = dl_misp_feed(sid, store=False)
+    return jsonify(event), 200, {'Content-Disposition': f"attachment; filename={event['Event']['uuid']}.json"}
 
 
 #########
