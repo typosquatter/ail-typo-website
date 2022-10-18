@@ -30,6 +30,7 @@ table#data th {
     padding: 5px 0;
     text-align: left;
     font-weight: 600;
+    cursor: pointer;
 }
 table#data td {
     padding: 5px 0;
