@@ -172,6 +172,8 @@ function pollScan() {
                     $('<a>').attr({class: "dropdown-item", href: "/download/" + sid + "/misp-json"}).text("Misp Json")
                 )
             )
+            // $('#share_button').css({'display': '', 'float': 'right'}).attr('title', "http://localhost:7005/" + $('#sid').val())
+            $('#share_button').css({'display': '', 'float': 'right'}).attr('title', "https://typosquatting-finder.circl.lu/" + $('#sid').val())
         }
         if (last_registered < data['registered']) {
             last_registered = data['registered']
@@ -231,6 +233,10 @@ function addClipboard(val){
 
 $(document).ready(function() {
     $("#alert-clip").hide();
+
+    if( $("#share").val() != 0){
+        checkShare()
+    }
 })
 
 algo_list = ["omission", "repetition", "changeOrder", "transposition", "replacement", "doubleReplacement", "addition", "keyboardInsertion", "missingDot", "stripDash", "vowelSwap", "addDash", "bitsquatting", "homoglyph", "commonMisspelling", "homophones", "wrongTld", "addTld", "subdomain", "singularPluralize", "changeDotDash"]
@@ -329,3 +335,32 @@ function runAll(){
         }
     }
 };
+
+function share_button(){
+    navigator.clipboard.writeText("https://typosquatting-finder.circl.lu/" + $('#sid').val());
+    // navigator.clipboard.writeText("http://localhost:7005/" + $('#sid').val());
+    $("#alert-clip").fadeTo(2000, 500).slideUp(500, function() {
+        $("#alert-clip").slideUp(500);
+    })
+}
+
+function checkShare(){
+    $.get({
+        url: '/share/' + $("#share").val(),
+        contentType: 'application/json',
+        success: function(data) {
+            $('#sid').val($("#share").val());
+            $('#url').val(data)
+            url = data
+            $('#scan').text('Stop');
+            pollScan();
+        },
+        error: function(xhr, status, error) {
+            $('#scan').text('Search');
+            $('#status').text(xhr.responseJSON['message'] || 'Something went wrong');
+        },
+    });
+
+}
+
+

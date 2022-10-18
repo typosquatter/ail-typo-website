@@ -503,7 +503,7 @@ def set_info(domain, request):
 @app.route("/")
 def index():
     """Home page"""
-    return render_template("home_page.html", algo_list=algo_list, len_table=len(list(algo_list.keys())), keys=list(algo_list.keys()))
+    return render_template("home_page.html", algo_list=algo_list, len_table=len(list(algo_list.keys())), keys=list(algo_list.keys()), share=0)
 
 @app.route("/info")
 def info_page():
@@ -605,6 +605,17 @@ def download_list(sid):
         for s in sessions:
             if s.id == sid:
                 return s.dl_list(), 200, {'Content-Type': 'text/plain', 'Content-Disposition': f'attachment; filename={s.url}-variations.txt'}
+    return jsonify({'message': 'Scan session not found'}), 404
+
+@app.route("/<sid>")
+def share(sid):
+    return render_template("home_page.html", algo_list=algo_list, len_table=len(list(algo_list.keys())), keys=list(algo_list.keys()), share=sid)
+
+@app.route("/share/<sid>")
+def share_info(sid):
+    if red.exists(sid):
+        sess_info = get_session_info(sid)
+        return sess_info['url'], 200
     return jsonify({'message': 'Scan session not found'}), 404
 
 

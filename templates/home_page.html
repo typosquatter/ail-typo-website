@@ -29,12 +29,13 @@
             <div>
                 <header>
                     <h1><img id="logo" src="{{ url_for('static',filename='image/ts-medium.png') }}"></h1>
-                    <!-- <p>Typo-Squatting finder</p> -->
+                    <!-- <p>typosquatting-finder.circl.lu</p> -->
                 </header>
                 <div id="intro"></div>
                 <div id="intro2">Typosquatting finder is a free and public service to find typosquatted domains in order to quickly assess if there are any existing fake domains used by an adversary. You can enter a domain below to discover potentially typo-squatted domains. An advanced option allows to select the algorithms used.</div>
                 <div id="searchbox">
                     <input type="hidden" id="sid">
+                    <input type="hidden" id="share" value="{{share}}">
                     <input type="text" id="url" placeholder="Enter a domain name to brute force Typo-Squatting" autofocus>
                     <button id="scan">Search</button>
                 </div>
@@ -47,6 +48,7 @@
             <br/>
             <div>
                 <div class="dropdown" style="float:right;" id="dropdownDownload"></div>
+                <button type="button" id="share_button" class="btn btn-primary" style="display: none;", onclick="share_button()">Share</button>
                 <p>
                     <a class="btn btn-primary" data-toggle="collapse" href="#collapseOption" role="button" aria-expanded="false" aria-controls="collapseOption">
                       Advanced
