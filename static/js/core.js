@@ -34,8 +34,15 @@ function fetchDomains() {
                 for (var i = 0; i < rows.length; i++){table.append(rows[i])}
             }),
         ).appendTo('#data')
-        $('<tr>').attr("id", "last_line").appendTo("#data")
-
+        $('<tr>').attr("id", "first_line").appendTo("#data")
+        $('<tr>').attr("id", "bank_line").appendTo("#data")
+        $('<tr>').attr("id", "university_line").appendTo("#data")
+        $('<tr>').attr("id", "moz_line").appendTo("#data")
+        $('<tr>').attr("id", "tranco_line").appendTo("#data")
+        $('<tr>').attr("id", "majestic_line").appendTo("#data")
+        $('<tr>').attr("id", "parking_line").appendTo("#data")
+        
+        cp_collapse = 0
         $.each(data, function(i, item) {
             for(j in item){
                 variation = item[j]['variation'] || ''
@@ -69,7 +76,7 @@ function fetchDomains() {
 
 
                 if(j == url){
-                    $("#last_line").before($('<tr>').append(
+                    $("#first_line").before($('<tr>').append(
                         $("<td>").text(permutation).css({"background-color": "#e9ecef", "vertical-align": "middle", "padding-left": "5px"}).append(
                             $("<button>").text('🔗').attr({onclick: 'addClipboard(\'' + permutation + '\')', id: "original-button", type: "button", class: "btn btn-light", title: "Copy this domain to clipboard"}),
                             $('<a>').attr({id: 'link', target: '_blank', href: "https://" + permutation, title: "Go to webpage"}).append(
@@ -100,17 +107,41 @@ function fetchDomains() {
                     ))
                 }
                 else{
-                    if (item[j]["majestic_million"]){
-                        $("#last_line").after($('<tr>').append(
-                            $("<td>").css({"vertical-align": "middle", "padding-left": "5px"}).append(
-                                $('<b>').text("✅ ").attr({title: "This domain is present in the top 100000 of the most visited websites"}),
-                                permutation,
-                                $("<button>").text('🔗').attr({onclick: 'addClipboard(\'' + permutation + '\')', type: "button", class: "btn btn-light", title: "Copy this domain to clipboard"}).css({"background-color": "#ffffff"}),
-                                $('<a>').attr({id: 'link', target: '_blank', href: "https://" + permutation, title: "Go to webpage"}).append(
-                                    $('<i>').attr({class: "fa fa-external-link", "aria-hidden": "true"})
-                                ),
-                                $('</br>'),
-                                $('<sup>').text(variation)
+                    first_td = $("<td>").css({"vertical-align": "middle", "padding-left": "5px"})
+                    current_tr = $('<tr>')
+                    if (item[j]["bank_domains"]){
+                        first_td.append($('<b>').text("🏦 ").attr({title: "This domain is present in the list of known banking website"}))
+                        $("#bank_line").after(current_tr)
+                    }
+                    else if(item[j]['university_domains']){
+                        first_td.append($('<b>').text("📚 ").attr({title: "This domain is present in the list of university domains"}))
+                        $("#university_line").after(current_tr)
+                    }
+                    else if (item[j]["majestic_million"]){
+                        first_td.append($('<b>').text("✅ ").attr({title: "This domain is present in the top 100000 of the most visited websites"}))
+                        $("#majestic_line").after(current_tr)
+                    }
+                    else if (item[j]["tranco"]){
+                        first_td.append($('<b>').text("✔️").attr({title: "This domain is present in the top 100000 of Tranco list"}))
+                        $("#tranco_line").after(current_tr)
+                    }
+                    else if (item[j]["moz-top500"]){
+                        first_td.append($('<b>').text("🦊 ").attr({title: "This domain is present in the top 500 of moz list"}))
+                        $("#moz_line").after(current_tr)
+                    }
+                    else if (item[j]['parking_domains']){
+                        first_td.append($('<b>').text("🅿️ ").attr({title: "This domain is present in the list of parking domain"}))
+                        $("#parking_line").after(current_tr)
+                    }
+                    else
+                        $("#first_line").before(current_tr)
+
+                    current_tr.append(
+                        first_td.append(
+                            permutation,
+                            $("<button>").text('🔗').attr({onclick: 'addClipboard(\'' + permutation + '\')', type: "button", class: "btn btn-light", title: "Copy this domain to clipboard"}).css({"background-color": "#ffffff"}),
+                            $('<a>').attr({id: 'link', target: '_blank', href: "https://" + permutation, title: "Go to webpage"}).append(
+                                $('<i>').attr({class: "fa fa-external-link", "aria-hidden": "true"})
                             ),
                             $("<td>").css({"vertical-align": "middle"}).append(
                                 $("<div>").append(
@@ -132,37 +163,8 @@ function fetchDomains() {
                                 $("<div>").attr("id", "span_length").text(mxlength)
                             ))
                         )
-                    }else{
-                        $("#last_line").before($('<tr>').append(
-                            $("<td>").text(permutation).css({"vertical-align": "middle", "padding-left": "5px"}).append(
-                                $("<button>").text('🔗').attr({onclick: 'addClipboard(\'' + permutation + '\')', type: "button", class: "btn btn-light", title: "Copy this domain to clipboard"}).css({"background-color": "#ffffff"}),
-                                $('<a>').attr({id: 'link', target: '_blank', href: "https://" + permutation, title: "Go to webpage"}).append(
-                                    $('<i>').attr({class: "fa fa-external-link", "aria-hidden": "true"})
-                                ),
-                                $('</br>'),
-                                $('<sup>').text(variation)
-                            ),
-                            $("<td>").css({"vertical-align": "middle"}).append(
-                                $("<div>").append(
-                                    ipv4,
-                                    $("<span>").attr("id", "span_length").text("   " + ipv4length)
-                                ),
-                                $("<div>").append(
-                                    ipv6,
-                                    $("<span>").attr("id", "span_length").text("   " + ipv6length)
-                                ),
-                                $('<sup>').text(geoip)
-                            ),
-                            $("<td>").css({"vertical-align": "middle"}).append(
-                                dns_ns,
-                                $("<div>").attr("id", "span_length").text(nslength)
-                            ),
-                            $("<td>").css({"vertical-align": "middle"}).append(
-                                dns_mx,
-                                $("<div>").attr("id", "span_length").text(mxlength)
-                            )
-                        ))
-                    }
+                    )
+                    
                 }
             }
             
@@ -391,24 +393,28 @@ function checkShare(){
 function comparer(index, asc) {
     return function(a, b) {
         var valA = getCellValue(a, index), valB = getCellValue(b, index)
-        console.log(valA)
+        var valColumn0A = getCellValue(a, 0), valColumn0B = getCellValue(b, 0)
+        const icon = ['✅', '🅿️', '📚', '🏦', '🦊', '✔️']
+
+        const col0_valA = icon.some(e1 => valColumn0A.includes(e1))
+        const col0_valB = icon.some(e1 => valColumn0B.includes(e1))
         
         if(index == 1){
-            if (!valA.trim()) {
+            if (!valA.trim() || col0_valA) {
                 if (asc)
-                    valA = '999'
+                    valA = '999.999'
                 else
-                    valA = '0'
+                    valA = '0.0'
             }else
-                valA = valA.split(".")[0]
+                valA = valA.split(".")[0] + '.' + valA.split(".")[1]
 
-            if (!valB.trim()) {
+            if (!valB.trim() || col0_valB) {
                 if (asc)
-                    valB = '999'
+                    valB = '999.999'
                 else
-                    valB = '0'
+                    valB = '0.0'
             }else
-                valB = valB.split(".")[0]
+                valB = valB.split(".")[0] + '.' + valB.split(".")[1]
             
         }
         if(index == 3){
@@ -416,18 +422,36 @@ function comparer(index, asc) {
             valB = valB.split(" ")[1]
         }
 
-        if (!valA || valA.includes('✅')) {
-            if (asc)
-                valA = 'zzz';
-            else
-                valA = 'aaa'
+        
+
+        if (!valA || (col0_valA && index != 1) ) {
+            if (asc){
+                if (!valA)
+                    valA = 'zzz'
+                else
+                    valA = 'yyy'
+            }
+            else{
+                if (!valA)
+                    valA = 'aaa'
+                else
+                    valA = 'aab'
+            }
         }
          
-        if (!valB || valB.includes('✅')) {
-            if (asc)
-            valB = 'zzz'
-            else
-            valB = 'aaa'
+        if (!valB || (col0_valB && index != 1)) {
+            if (asc){
+                if (!valB)
+                    valB = 'zzz'
+                else
+                    valB = 'yyy'
+            }
+            else{
+                if (!valB)
+                    valB = 'aaa'
+                else
+                    valB = 'aab'
+            }
         };
 
         return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB)

@@ -80,11 +80,44 @@ sessions = list()
 with open("./etc/algo_list.json", "r") as read_json:
     algo_list = json.load(read_json)
 
+#################
+# Warning lists #
+#################
 
 if redis_warning_list.exists('majestic_million'):
     majestic_million = True
 else:
     majestic_million = False
+
+if redis_warning_list.exists('university_domains'):
+    university = True
+else:
+    university = False
+
+if redis_warning_list.exists('bank_website'):
+    bank_website = True
+else:
+    bank_website = False
+
+if redis_warning_list.exists('parking_domains'):
+    parking_domain = True
+else:
+    parking_domain = False
+
+if redis_warning_list.exists('parking_domains_ns'):
+    parking_domain_ns = json.loads(red.get("parking_domains_ns").decode())
+else:
+    parking_domain_ns = False
+
+if redis_warning_list.exists('tranco'):
+    tranco = True
+else:
+    tranco = False
+
+if redis_warning_list.exists('moz-top500'):
+    moz_top500 = True
+else:
+    moz_top500 = False
 
 #########
 ## APP ##
@@ -149,9 +182,36 @@ class Session():
                         for domain in self.result_stopped[work[1][1]]:
                             if list(domain.keys())[0] == work[1][0]:
                                 data = domain
+                                flag_parking = False
                                 if majestic_million:
                                     if redis_warning_list.zrank('majestic_million', work[1][0]):
                                         data[work[1][0]]['majestic_million'] = True
+                                if parking_domain:
+                                    for a in data[work[1][0]]['A']:
+                                        if redis_warning_list.zrank('parking_domains', a):
+                                            data[work[1][0]]['parking_domains'] = True
+                                            flag_parking = True
+                                            break
+                                if university:
+                                    if redis_warning_list.zrank("university_domains", work[1][0]):
+                                        data[work[1][0]]['university_domains'] = True
+                                if bank_website:
+                                    if redis_warning_list.zrank("bank_domains", work[1][0]):
+                                        data[work[1][0]]['bank_domains'] = True
+                                if parking_domain_ns and not flag_parking:
+                                    for ns in data[work[1][0]]['NS']:
+                                        for park in parking_domain_ns:
+                                            if park in ns:
+                                                data[work[1][0]]['parking_domains'] = True
+                                                break
+
+                                if tranco:
+                                    if redis_warning_list.zrank('tranco', work[1][0]):
+                                        data[work[1][0]]['tranco'] = True
+                                if moz_top500:
+                                    if redis_warning_list.zrank('moz-top500', work[1][0]):
+                                        data[work[1][0]]['moz-top500'] = True
+
                                 flag = True
                 ## Redis doesn't have this domain in is db
                 if not flag:
@@ -185,9 +245,35 @@ class Session():
                     data[work[1][0]]['variation'] = work[1][1]
                     self.add_data = True
 
+                    flag_parking = False
+
                     if majestic_million:
                         if redis_warning_list.zrank('majestic_million', work[1][0]):
                             data[work[1][0]]['majestic_million'] = True
+                    if parking_domain:
+                        for a in data[work[1][0]]['A']:
+                            if redis_warning_list.zrank('parking_domains', a):
+                                data[work[1][0]]['parking_domains'] = True
+                                flag_parking = True
+                                break
+                    if university:
+                        if redis_warning_list.zrank("university_domains", work[1][0]):
+                            data[work[1][0]]['university_domains'] = True
+                    if bank_website:
+                        if redis_warning_list.zrank("bank_domains", work[1][0]):
+                            data[work[1][0]]['bank_domains'] = True
+                    if parking_domain_ns and not flag_parking:
+                        for ns in data[work[1][0]]['NS']:
+                            for park in parking_domain_ns:
+                                if park in ns:
+                                    data[work[1][0]]['parking_domains'] = True
+                                    break
+                    if tranco:
+                        if redis_warning_list.zrank('tranco', work[1][0]):
+                            data[work[1][0]]['tranco'] = True
+                    if moz_top500:
+                        if redis_warning_list.zrank('moz-top500', work[1][0]):
+                            data[work[1][0]]['moz-top500'] = True
 
                     
                 self.result[work[0]] = data         #Store data back at correct index
