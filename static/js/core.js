@@ -45,6 +45,7 @@ function fetchDomains() {
         cp_collapse = 0
         $.each(data, function(i, item) {
             for(j in item){
+                cp_collapse += 1
                 variation = item[j]['variation'] || ''
                 permutation = j || ''
                 ipv4 = (item[j]['A'] || [''])[0];
@@ -53,26 +54,86 @@ function fetchDomains() {
                 dns_mx = (item[j]['MX'] || [''])[0];
                 geoip = item[j]['geoip'] || '';
                 
-                if (item[j]['A'])
-                    ipv4length = item[j]['A'].length - 1 >= 1 ? (item[j]['A'].length - 1).toString() + ' more...' : ''
-                else
+                if (item[j]['A']){
+                    if (item[j]['A'].length - 1 >= 1){
+                        ipv4length = $("<a>").attr({"data-toggle": "collapse", "href": "#" + item[j]['variation'] + "_collapse" + cp_collapse, "role": "button", "aria-expanded": "false", "aria-controls": item[j]['variation'] + "_collapse" + cp_collapse}).text((item[j]['A'].length - 1).toString() + ' more...')
+                        
+                        locdiv = $('<div>').attr("class", "card card-body")
+                        for (a = 1; a < item[j]['A'].length; a++ )
+                            locdiv.append(item[j]['A'][a], '<br/>')
+
+                        ipv4lengthdiv = $('<div>').attr({'class': "collapse", "id": item[j]['variation'] + '_collapse' + cp_collapse}).append(
+                            locdiv
+                        )
+                    }
+                    else{
+                        ipv4lengthdiv = ''
+                        ipv4length = ''
+                    }
+                }
+                else{
                     ipv4length = ''
+                    ipv4lengthdiv = ''
+                }
 
                 
-                if (item[j]['AAAA'])
-                    ipv6length = item[j]['AAAA'].length - 1 >= 1 ? (item[j]['AAAA'].length - 1).toString() + ' more...' : ''
-                else
+                if (item[j]['AAAA']){
+                    if (item[j]['AAAA'].length - 1 >= 1){
+                        ipv6length = $("<a>").attr({"data-toggle": "collapse", "href": "#" + item[j]['variation'] + "_6collapse" + cp_collapse, "role": "button", "aria-expanded": "false", "aria-controls": item[j]['variation'] + "_6collapse" + cp_collapse}).text((item[j]['AAAA'].length - 1).toString() + ' more...')
+                        
+                        locdiv = $('<div>').attr("class", "card card-body")
+                        for (a = 1; a < item[j]['AAAA'].length; a++ )
+                            locdiv.append(item[j]['AAAA'][a], '<br/>')
+
+                        ipv6lengthdiv = $('<div>').attr({'class': "collapse", "id": item[j]['variation'] + '_6collapse' + cp_collapse}).append(
+                            locdiv
+                        )
+                    }else{
+                        ipv6lengthdiv = ''
+                        ipv6length = ''
+                    }
+                }else{
                     ipv6length = ''
+                    ipv6lengthdiv = ''
+                }
 
-                if (item[j]['NS'])
-                    nslength = item[j]['NS'].length - 1 >= 1 ? (item[j]['NS'].length - 1).toString() + ' more...' : ''
-                else
+                if (item[j]['NS']){
+                    if (item[j]['NS'].length - 1 >= 1){
+                        nslength = $("<a>").attr({"data-toggle": "collapse", "href": "#" + item[j]['variation'] + "_NScollapse" + cp_collapse, "role": "button", "aria-expanded": "false", "aria-controls": item[j]['variation'] + "_NScollapse" + cp_collapse}).text((item[j]['NS'].length - 1).toString() + ' more...')
+                        locdiv = $('<div>').attr("class", "card card-body")
+                        for (a = 1; a < item[j]['NS'].length; a++ )
+                            locdiv.append(item[j]['NS'][a], '<br/>')
+
+                        nslengthdiv = $('<div>').attr({'class': "collapse", "id": item[j]['variation'] + '_NScollapse' + cp_collapse}).append(
+                            locdiv
+                        )
+                    }else{
+                        nslengthdiv = ''
+                        nslength = ''
+                    }
+                }else{
                     nslength = ''
+                    nslengthdiv = ''
+                }
 
-                if (item[j]['MX'])
-                    mxlength = item[j]['MX'].length - 1 >= 1 ? (item[j]['MX'].length - 1).toString() + ' more...' : ''
-                else
+                if (item[j]['MX']){
+                    if (item[j]['MX'].length - 1 >= 1){
+                        mxlength = $("<a>").attr({"data-toggle": "collapse", "href": "#" + item[j]['variation'] + "_MXcollapse" + cp_collapse, "role": "button", "aria-expanded": "false", "aria-controls": item[j]['variation'] + "_MXcollapse" + cp_collapse}).text((item[j]['MX'].length - 1).toString() + ' more...')
+                        locdiv = $('<div>').attr("class", "card card-body")
+                        for (a = 1; a < item[j]['MX'].length; a++ )
+                            locdiv.append(item[j]['MX'][a], '<br/>')
+
+                        mxlengthdiv = $('<div>').attr({'class': "collapse", "id": item[j]['variation'] + '_MXcollapse' + cp_collapse}).append(
+                            locdiv
+                        )
+                    }else{
+                        mxlengthdiv = ''
+                        mxlength = ''
+                    }
+                }else{
                     mxlength = ''
+                    mxlengthdiv = ''
+                }
 
 
                 if(j == url){
@@ -88,21 +149,25 @@ function fetchDomains() {
                         $("<td>").css({"background-color": "#e9ecef", "vertical-align": "middle"}).append(
                             $("<div>").append(
                                 ipv4,
-                                $("<span>").attr("id", "span_length").text("   " + ipv4length)
+                                $("<span>").attr("id", "span_length").append("   ",  ipv4length),
+                                ipv4lengthdiv
                             ),
                             $("<div>").append(
                                 ipv6,
-                                $("<span>").attr("id", "span_length").text("   " + ipv6length)
+                                $("<span>").attr("id", "span_length").append("   ", ipv6length),
+                                ipv6lengthdiv
                             ),
                             $('<sup>').text(geoip)
                         ),
                         $("<td>").css({"background-color": "#e9ecef", "vertical-align": "middle"}).append(
                             dns_ns,
-                            $("<div>").attr("id", "span_length").text(nslength)
+                            $("<div>").attr("id", "span_length").append(nslength),
+                            nslengthdiv
                         ),
                         $("<td>").css({"background-color": "#e9ecef", "vertical-align": "middle"}).append(
                             dns_mx,
-                            $("<div>").attr("id", "span_length").text(mxlength)
+                            $("<div>").attr("id", "span_length").append(mxlength),
+                            mxlengthdiv
                         )
                     ))
                 }
@@ -143,25 +208,31 @@ function fetchDomains() {
                             $('<a>').attr({id: 'link', target: '_blank', href: "https://" + permutation, title: "Go to webpage"}).append(
                                 $('<i>').attr({class: "fa fa-external-link", "aria-hidden": "true"})
                             ),
-                            $("<td>").css({"vertical-align": "middle"}).append(
-                                $("<div>").append(
-                                    ipv4,
-                                    $("<span>").attr("id", "span_length").text("   " + ipv4length)
-                                ),
-                                $("<div>").append(
-                                    ipv6,
-                                    $("<span>").attr("id", "span_length").text("   " + ipv6length)
-                                ),
-                                $('<sup>').text(geoip)
+                            $('</br>'),
+                            $('<sup>').text(variation)
+                        ),
+                        $("<td>").css({"vertical-align": "middle"}).append(
+                            $("<div>").append(
+                                ipv4,
+                                $("<span>").attr("id", "span_length").append("   ",  ipv4length),
+                                ipv4lengthdiv
                             ),
-                            $("<td>").css({"vertical-align": "middle"}).append(
-                                dns_ns,
-                                $("<div>").attr("id", "span_length").text(nslength)
+                            $("<div>").append(
+                                ipv6,
+                                $("<span>").attr("id", "span_length").append("   ", ipv6length),
+                                ipv6lengthdiv
                             ),
-                            $("<td>").css({"vertical-align": "middle"}).append(
-                                dns_mx,
-                                $("<div>").attr("id", "span_length").text(mxlength)
-                            ))
+                            $('<sup>').text(geoip)
+                        ),
+                        $("<td>").css({"vertical-align": "middle"}).append(
+                            dns_ns,
+                            $("<div>").attr("id", "span_length").append(nslength),
+                            nslengthdiv
+                        ),
+                        $("<td>").css({"vertical-align": "middle"}).append(
+                            dns_mx,
+                            $("<div>").attr("id", "span_length").append(mxlength),
+                            mxlengthdiv
                         )
                     )
                     
@@ -198,8 +269,8 @@ function pollScan() {
                     $('<a>').attr({class: "dropdown-item", href: "/download/" + sid + "/misp-json"}).text("Misp Json")
                 )
             )
-            // $('#share_button').css({'display': '', 'float': 'right'}).attr('title', "http://localhost:7005/" + $('#sid').val())
-            $('#share_button').css({'display': '', 'float': 'right'}).attr('title', "https://typosquatting-finder.circl.lu/" + $('#sid').val())
+            $('#share_button').css({'display': '', 'float': 'right'}).attr('title', "http://localhost:7005/" + $('#sid').val())
+            // $('#share_button').css({'display': '', 'float': 'right'}).attr('title', "https://typosquatting-finder.circl.lu/" + $('#sid').val())
         }
         if (last_registered < data['registered']) {
             last_registered = data['registered']
@@ -364,8 +435,8 @@ function runAll(){
 };
 
 function share_button(){
-    navigator.clipboard.writeText("https://typosquatting-finder.circl.lu/" + $('#sid').val());
-    // navigator.clipboard.writeText("http://localhost:7005/" + $('#sid').val());
+    // navigator.clipboard.writeText("https://typosquatting-finder.circl.lu/" + $('#sid').val());
+    navigator.clipboard.writeText("http://localhost:7005/" + $('#sid').val());
     $("#alert-clip").fadeTo(2000, 500).slideUp(500, function() {
         $("#alert-clip").slideUp(500);
     })
