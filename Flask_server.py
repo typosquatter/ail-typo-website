@@ -105,7 +105,7 @@ else:
     parking_domain = False
 
 if redis_warning_list.exists('parking_domains_ns'):
-    parking_domain_ns = json.loads(red.get("parking_domains_ns").decode())
+    parking_domain_ns = json.loads(redis_warning_list.get("parking_domains_ns").decode())
 else:
     parking_domain_ns = False
 
