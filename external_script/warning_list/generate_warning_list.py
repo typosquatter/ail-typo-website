@@ -4,6 +4,7 @@ import redis
 import configparser
 import subprocess
 import json
+import ipaddress
 
 pathConf = '../../conf/conf.cfg'
 
@@ -42,7 +43,8 @@ print("[+] Parking domains\n")
 try:
     r = requests.get("https://raw.githubusercontent.com/MISP/misp-warninglists/main/lists/parking-domain/list.json")
     for park_domain in r.json()['list']:
-        redis_warning_list.zadd("parking_domains", {park_domain: 1})
+        for ip in ipaddress.IPv4Network(park_domain, False):
+            redis_warning_list.zadd("parking_domains", {format(ip): 1})
 except:
     print("[-] Error Download parking_domains")
 
@@ -68,7 +70,7 @@ try:
     for moz in r.json()['list']:
         redis_warning_list.zadd("moz-top500", {moz: 1})
 except:
-    print("[-] Error Download mos-top500")
+    print("[-] Error Download moz-top500")
 
 print("[+] Majestic Million")
 subprocess.call(['python3', 'generate_majestic-million.py', '-n', '1000000'])
