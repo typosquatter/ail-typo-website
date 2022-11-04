@@ -169,6 +169,44 @@ class Session():
         return response_json[0]['country_info']['Country'] 
 
 
+    def check_warning_list(self, data, work):
+        flag_parking = False
+        data_keys = list(data[work[1][0]].keys())
+
+        if majestic_million:
+            if redis_warning_list.zrank('majestic_million', work[1][0]):
+                data[work[1][0]]['majestic_million'] = True
+        if parking_domain:
+            if 'A' in data_keys:
+                for a in data[work[1][0]]['A']:
+                    if redis_warning_list.zrank('parking_domains', a):
+                        data[work[1][0]]['parking_domains'] = True
+                        data[work[1][0]]['park_ip'] = True
+                        flag_parking = True
+                        break
+        if university:
+            if redis_warning_list.zrank("university_domains", work[1][0]):
+                data[work[1][0]]['university_domains'] = True
+        if bank_website:
+            if redis_warning_list.zrank("bank_domains", work[1][0]):
+                data[work[1][0]]['bank_domains'] = True
+        if parking_domain_ns and not flag_parking:
+            if 'NS' in data_keys:
+                for ns in data[work[1][0]]['NS']:
+                    for park in parking_domain_ns:
+                        if park in ns.lower():
+                            data[work[1][0]]['parking_domains'] = True
+                            break
+        if tranco:
+            if redis_warning_list.zrank('tranco', work[1][0]):
+                data[work[1][0]]['tranco'] = True
+        if moz_top500:
+            if redis_warning_list.zrank('moz-top500', work[1][0]):
+                data[work[1][0]]['moz-top500'] = True
+
+        return data
+
+
     def crawl(self):
         """Threaded function for queue processing."""
         while not self.jobs.empty():
@@ -182,37 +220,9 @@ class Session():
                         for domain in self.result_stopped[work[1][1]]:
                             if list(domain.keys())[0] == work[1][0]:
                                 data = domain
-                                flag_parking = False
-                                if majestic_million:
-                                    if redis_warning_list.zrank('majestic_million', work[1][0]):
-                                        data[work[1][0]]['majestic_million'] = True
-                                if parking_domain:
-                                    for a in data[work[1][0]]['A']:
-                                        if redis_warning_list.zrank('parking_domains', a):
-                                            data[work[1][0]]['parking_domains'] = True
-                                            flag_parking = True
-                                            break
-                                if university:
-                                    if redis_warning_list.zrank("university_domains", work[1][0]):
-                                        data[work[1][0]]['university_domains'] = True
-                                if bank_website:
-                                    if redis_warning_list.zrank("bank_domains", work[1][0]):
-                                        data[work[1][0]]['bank_domains'] = True
-                                if parking_domain_ns and not flag_parking:
-                                    for ns in data[work[1][0]]['NS']:
-                                        for park in parking_domain_ns:
-                                            if park in ns:
-                                                data[work[1][0]]['parking_domains'] = True
-                                                break
-
-                                if tranco:
-                                    if redis_warning_list.zrank('tranco', work[1][0]):
-                                        data[work[1][0]]['tranco'] = True
-                                if moz_top500:
-                                    if redis_warning_list.zrank('moz-top500', work[1][0]):
-                                        data[work[1][0]]['moz-top500'] = True
-
+                                data = self.check_warning_list(data, work)
                                 flag = True
+
                 ## Redis doesn't have this domain in is db
                 if not flag:
                     if app.debug:
@@ -220,24 +230,20 @@ class Session():
                     else:
                         data = ail_typo_squatting.dnsResolving([work[1][0]], self.url, "")
 
-                    if 'A' in data[work[1][0]].keys():
+                    data_keys = list(data[work[1][0]].keys())
+
+                    if 'A' in data_keys:
                         data[work[1][0]]['geoip'] = self.geoIp(data[work[1][0]]['A'][0])
-                    elif 'AAAA' in data.keys():
+                    elif 'AAAA' in data_keys:
                         data[work[1][0]]['geoip'] = self.geoIp(data[work[1][0]]['AAAA'][0])  
 
-                    # Delete empty MX records
-                    if 'MX' in list(data[work[1][0]].keys()):
-                        loc_list = list()
-                        for i in range(0, len(data[work[1][0]]['MX'])):
-                            if "localhost" in data[work[1][0]]['MX'][i] or len(data[work[1][0]]['MX'][i]) < 4:
-                                loc_list.append(i)
-                            else:
-                                data[work[1][0]]['MX'][i] = data[work[1][0]]['MX'][i][:-1]
-                        
-                        for index in loc_list:
-                            del data[work[1][0]]['MX'][index]
 
-                    if 'NS' in list(data[work[1][0]].keys()):
+                    if 'MX' in data_keys:
+                        # Parse NS record to remove end point
+                        for i in range(0, len(data[work[1][0]]['MX'])):
+                            data[work[1][0]]['MX'][i] = data[work[1][0]]['MX'][i][:-1]
+
+                    if 'NS' in data_keys:
                         # Parse NS record to remove end point
                         for i in range(0, len(data[work[1][0]]['NS'])):
                             data[work[1][0]]['NS'][i] = data[work[1][0]]['NS'][i][:-1]
@@ -245,35 +251,7 @@ class Session():
                     data[work[1][0]]['variation'] = work[1][1]
                     self.add_data = True
 
-                    flag_parking = False
-
-                    if majestic_million:
-                        if redis_warning_list.zrank('majestic_million', work[1][0]):
-                            data[work[1][0]]['majestic_million'] = True
-                    if parking_domain:
-                        for a in data[work[1][0]]['A']:
-                            if redis_warning_list.zrank('parking_domains', a):
-                                data[work[1][0]]['parking_domains'] = True
-                                flag_parking = True
-                                break
-                    if university:
-                        if redis_warning_list.zrank("university_domains", work[1][0]):
-                            data[work[1][0]]['university_domains'] = True
-                    if bank_website:
-                        if redis_warning_list.zrank("bank_domains", work[1][0]):
-                            data[work[1][0]]['bank_domains'] = True
-                    if parking_domain_ns and not flag_parking:
-                        for ns in data[work[1][0]]['NS']:
-                            for park in parking_domain_ns:
-                                if park in ns:
-                                    data[work[1][0]]['parking_domains'] = True
-                                    break
-                    if tranco:
-                        if redis_warning_list.zrank('tranco', work[1][0]):
-                            data[work[1][0]]['tranco'] = True
-                    if moz_top500:
-                        if redis_warning_list.zrank('moz-top500', work[1][0]):
-                            data[work[1][0]]['moz-top500'] = True
+                    data = self.check_warning_list(data, work)
 
                     
                 self.result[work[0]] = data         #Store data back at correct index
@@ -612,10 +590,7 @@ def typo():
     if faup.get_tld():
         url = faup.get_host()
     else:
-        return jsonify({'message': 'Domain not valid'}), 400
-    
-    if len(url.split(".")) > 4:
-        return jsonify({'message': 'Domain is too long'}), 400
+        return jsonify({'message': 'Please enter a valid domain name'}), 400
 
     set_info(url, request)
 

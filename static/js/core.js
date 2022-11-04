@@ -269,55 +269,14 @@ function pollScan() {
                     $('<a>').attr({class: "dropdown-item", href: "/download/" + sid + "/misp-json"}).text("Misp Json")
                 )
             )
-            $('#share_button').css({'display': '', 'float': 'right'}).attr('title', "http://localhost:7005/" + $('#sid').val())
-            // $('#share_button').css({'display': '', 'float': 'right'}).attr('title', "https://typosquatting-finder.circl.lu/" + $('#sid').val())
+            // $('#share_button').css({'display': '', 'float': 'right'}).attr('title', "http://localhost:7005/" + $('#sid').val())
+            $('#share_button').css({'display': '', 'float': 'right'}).attr('title', "https://typosquatting-finder.circl.lu/" + $('#sid').val())
         }
         if (last_registered < data['registered']) {
             last_registered = data['registered']
             fetchDomains();
         }
     });
-}
-
-function extractHostname(url) {
-    var hostname;
-    //find & remove protocol (http, ftp, etc.) and get hostname
-  
-    if (url.indexOf("//") > -1) {
-      hostname = url.split('/')[2];
-    } else {
-      hostname = url.split('/')[0];
-    }
-  
-    //find & remove port number
-    hostname = hostname.split(':')[0];
-    //find & remove "?"
-    hostname = hostname.split('?')[0];
-  
-    return hostname;
-  }
-
-function extractRootDomain(url) {
-    var domain = extractHostname(url),
-    splitArr = domain.split('.'),
-    arrLen = splitArr.length;
-  
-    //extracting the root domain here
-    //if there is a subdomain
-    if (arrLen > 2) {
-      domain = splitArr[arrLen - 2] + '.' + splitArr[arrLen - 1];
-      //check to see if it's using a Country Code Top Level Domain (ccTLD) (i.e. ".me.uk")
-      if (splitArr[arrLen - 2].length == 2 && splitArr[arrLen - 1].length == 2) {
-        //this is using a ccTLD
-        domain = splitArr[arrLen - 3] + '.' + domain;
-      }
-    }
-    return domain.toLowerCase();
-}
-
-function validDomain(domain) {
-    const regex = new RegExp('^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$');
-    return regex.test(domain)
 }
 
 
@@ -344,10 +303,6 @@ function actionScan() {
         $('#status').text('↖ You need to type in a domain name first');
         return
     }
-    if (!validDomain($('#url').val())){
-        $('#status').text('↖ Please enter a valid domain name');
-        return
-    }
 
     if ($('#scan').text() == 'Search') {
         last_registered = 0;
@@ -360,8 +315,6 @@ function actionScan() {
         $('#progress').css("width", '0%');
 
         url = $('#url').val()
-        // url = extractRootDomain(u)
-
         
         data_dict = {}
         data_dict['url'] = url
@@ -435,8 +388,8 @@ function runAll(){
 };
 
 function share_button(){
-    // navigator.clipboard.writeText("https://typosquatting-finder.circl.lu/" + $('#sid').val());
-    navigator.clipboard.writeText("http://localhost:7005/" + $('#sid').val());
+    navigator.clipboard.writeText("https://typosquatting-finder.circl.lu/" + $('#sid').val());
+    // navigator.clipboard.writeText("http://localhost:7005/" + $('#sid').val());
     $("#alert-clip").fadeTo(2000, 500).slideUp(500, function() {
         $("#alert-clip").slideUp(500);
     })
