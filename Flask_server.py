@@ -174,21 +174,21 @@ class Session():
         data_keys = list(data[work[1][0]].keys())
 
         if majestic_million:
-            if redis_warning_list.zrank('majestic_million', work[1][0]):
+            if redis_warning_list.zrank('majestic_million', work[1][0]) != None:
                 data[work[1][0]]['majestic_million'] = True
         if parking_domain:
             if 'A' in data_keys:
                 for a in data[work[1][0]]['A']:
-                    if redis_warning_list.zrank('parking_domains', a):
+                    if redis_warning_list.zrank('parking_domains', a) != None:
                         data[work[1][0]]['parking_domains'] = True
                         data[work[1][0]]['park_ip'] = True
                         flag_parking = True
                         break
         if university:
-            if redis_warning_list.zrank("university_domains", work[1][0]):
+            if redis_warning_list.zrank("university_domains", work[1][0]) != None:
                 data[work[1][0]]['university_domains'] = True
         if bank_website:
-            if redis_warning_list.zrank("bank_domains", work[1][0]):
+            if redis_warning_list.zrank("bank_domains", work[1][0]) != None:
                 data[work[1][0]]['bank_domains'] = True
         if parking_domain_ns and not flag_parking:
             if 'NS' in data_keys:
@@ -198,10 +198,10 @@ class Session():
                             data[work[1][0]]['parking_domains'] = True
                             break
         if tranco:
-            if redis_warning_list.zrank('tranco', work[1][0]):
+            if redis_warning_list.zrank('tranco', work[1][0]) != None:
                 data[work[1][0]]['tranco'] = True
         if moz_top500:
-            if redis_warning_list.zrank('moz-top500', work[1][0]):
+            if redis_warning_list.zrank('moz-top500', work[1][0]) != None:
                 data[work[1][0]]['moz-top500'] = True
 
         return data
