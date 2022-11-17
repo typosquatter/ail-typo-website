@@ -19,9 +19,7 @@ from threading import Thread
 
 from pymisp import MISPEvent, MISPObject, MISPOrganisation
 
-from pyfaup.faup import Faup
-
-faup = Faup()
+import tldextract
 
 
 ##########
@@ -586,9 +584,9 @@ def typo():
     data_dict = request.json["data_dict"]
     url = data_dict["url"]
 
-    faup.decode(url)
-    if faup.get_tld():
-        url = faup.get_host()
+    domain_extract = tldextract.extract(url)
+    if domain_extract.suffix:
+        url = '.'.join(part for part in domain_extract if part)
     else:
         return jsonify({'message': 'Please enter a valid domain name'}), 400
 
