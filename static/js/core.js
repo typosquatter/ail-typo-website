@@ -33,6 +33,34 @@ function fetchDomains() {
                 if (!this.asc){rows = rows.reverse()}
                 for (var i = 0; i < rows.length; i++){table.append(rows[i])}
             }),
+            $('<th>').text("WEB TITLE").click(function(){ 
+                var table = $(this).parents('table').eq(0)
+                var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index(), !this.asc))
+                this.asc = !this.asc
+                if (!this.asc){rows = rows.reverse()}
+                for (var i = 0; i < rows.length; i++){table.append(rows[i])}
+            }),
+            $('<th>').text("WEB SIMILARITY").css({"text-align": "center"}).click(function(){ 
+                var table = $(this).parents('table').eq(0)
+                var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index(), !this.asc))
+                this.asc = !this.asc
+                if (!this.asc){rows = rows.reverse()}
+                for (var i = 0; i < rows.length; i++){table.append(rows[i])}
+            }),
+            $('<th>').text("RESSOURCE DIFF").css({"text-align": "center"}).click(function(){ 
+                var table = $(this).parents('table').eq(0)
+                var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index(), !this.asc))
+                this.asc = !this.asc
+                if (!this.asc){rows = rows.reverse()}
+                for (var i = 0; i < rows.length; i++){table.append(rows[i])}
+            }),
+            $('<th>').text("PHISHING").css({"text-align": "center"}).click(function(){ 
+                var table = $(this).parents('table').eq(0)
+                var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index(), !this.asc))
+                this.asc = !this.asc
+                if (!this.asc){rows = rows.reverse()}
+                for (var i = 0; i < rows.length; i++){table.append(rows[i])}
+            })
         ).appendTo('#data')
         $('<tr>').attr("id", "first_line").appendTo("#data")
         $('<tr>').attr("id", "bank_line").appendTo("#data")
@@ -53,6 +81,10 @@ function fetchDomains() {
                 dns_ns = (item[j]['NS'] || [''])[0];
                 dns_mx = (item[j]['MX'] || [''])[0];
                 geoip = item[j]['geoip'] || '';
+                website_title = item[j]['website_title'] || '';
+                website_sim = item[j]['website_sim'] ? item[j]['website_sim'] + ' %': '';
+                ressource_diff = item[j]['ressource_diff'] ? item[j]['ressource_diff'] + ' %': '';
+                ratio = item[j]['ratio'] || item[j]['ratio'] == '0' ?  item[j]['ratio'] + ' %': '';
                 
                 if (item[j]['A']){
                     if (item[j]['A'].length - 1 >= 1){
@@ -140,7 +172,7 @@ function fetchDomains() {
                     $("#first_line").before($('<tr>').append(
                         $("<td>").text(permutation).css({"background-color": "#e9ecef", "vertical-align": "middle", "padding-left": "5px"}).append(
                             $("<button>").text('🔗').attr({onclick: 'addClipboard(\'' + permutation + '\')', id: "original-button", type: "button", class: "btn btn-light", title: "Copy this domain to clipboard"}),
-                            $('<a>').attr({id: 'link', target: '_blank', href: "https://" + permutation, title: "Go to webpage"}).append(
+                            $('<a>').attr({id: 'link', target: '_blank', href: "http://" + permutation, title: "Go to webpage"}).append(
                                 $('<i>').attr({class: "fa fa-external-link", "aria-hidden": "true"})
                             ),
                             $('</br>'),
@@ -168,6 +200,18 @@ function fetchDomains() {
                             dns_mx,
                             $("<div>").attr("id", "span_length").append(mxlength),
                             mxlengthdiv
+                        ),
+                        $("<td>").css({"background-color": "#e9ecef", "vertical-align": "middle"}).append(
+                            website_title
+                        ),
+                        $("<td>").css({"background-color": "#e9ecef", "vertical-align": "middle", "text-align": "center"}).append(
+                            website_sim
+                        ),
+                        $("<td>").css({"background-color": "#e9ecef", "vertical-align": "middle", "text-align": "center"}).append(
+                            ressource_diff
+                        ),
+                        $("<td>").css({"background-color": "#e9ecef", "vertical-align": "middle", "text-align": "center"}).append(
+                            '0 %'
                         )
                     ))
                 }
@@ -205,7 +249,7 @@ function fetchDomains() {
                         first_td.append(
                             permutation,
                             $("<button>").text('🔗').attr({onclick: 'addClipboard(\'' + permutation + '\')', type: "button", class: "btn btn-light", title: "Copy this domain to clipboard"}).css({"background-color": "#ffffff"}),
-                            $('<a>').attr({id: 'link', target: '_blank', href: "https://" + permutation, title: "Go to webpage"}).append(
+                            $('<a>').attr({id: 'link', target: '_blank', href: "http://" + permutation, title: "Go to webpage"}).append(
                                 $('<i>').attr({class: "fa fa-external-link", "aria-hidden": "true"})
                             ),
                             $('</br>'),
@@ -233,6 +277,18 @@ function fetchDomains() {
                             dns_mx,
                             $("<div>").attr("id", "span_length").append(mxlength),
                             mxlengthdiv
+                        ),
+                        $("<td>").css({"vertical-align": "middle"}).append(
+                            website_title
+                        ),
+                        $("<td>").css({"vertical-align": "middle", "text-align": "center"}).append(
+                            website_sim
+                        ),
+                        $("<td>").css({"vertical-align": "middle", "text-align": "center"}).append(
+                            ressource_diff
+                        ),
+                        $("<td>").css({"vertical-align": "middle", "text-align": "center"}).append(
+                            ratio
                         )
                     )
                     
@@ -295,7 +351,7 @@ $(document).ready(function() {
     }
 })
 
-algo_list = ["omission", "repetition", "changeOrder", "transposition", "replacement", "doubleReplacement", "addition", "keyboardInsertion", "missingDot", "stripDash", "vowelSwap", "addDash", "bitsquatting", "homoglyph", "commonMisspelling", "homophones", "wrongTld", "addTld", "subdomain", "singularPluralize", "changeDotDash"]
+algo_list = ["omission", "repetition", "changeOrder", "transposition", "replacement", "doubleReplacement", "addition", "keyboardInsertion", "missingDot", "stripDash", "vowelSwap", "addDash", "bitsquatting", "homoglyph", "commonMisspelling", "homophones", "wrongTld", "addTld", "subdomain", "singularPluralize", "changeDotDash", "addDynamicDns"]
 
 
 function actionScan() {
@@ -445,10 +501,27 @@ function comparer(index, asc) {
             valA = valA.split(" ")[1]
             valB = valB.split(" ")[1]
         }
+        if(index == 5 || index == 6 || index == 7){
+            if (!valA.trim() || col0_valA) {
+                if (asc)
+                    valA = '999'
+                else
+                    valA = '-1'
+            }else
+                valA = valA.split(" ")[0]
 
+            if (!valB.trim() || col0_valB) {
+                if (asc)
+                    valB = '999'
+                else
+                    valB = '-1'
+            }else
+                valB = valB.split(" ")[0]
+        }
+        
         
 
-        if (!valA || (col0_valA && index != 1) ) {
+        if (!valA && (col0_valA && index != 1) && (col0_valA && index != 5) && (col0_valA && index != 6) && (col0_valA && index != 7)) {
             if (asc){
                 if (!valA)
                     valA = 'zzz'
@@ -463,7 +536,7 @@ function comparer(index, asc) {
             }
         }
          
-        if (!valB || (col0_valB && index != 1)) {
+        if (!valB && (col0_valB && index != 1) && (col0_valB && index != 5) && (col0_valB && index != 6) && (col0_valB && index != 7)) {
             if (asc){
                 if (!valB)
                     valB = 'zzz'

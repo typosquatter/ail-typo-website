@@ -13,6 +13,8 @@ import re
 from typing import List
 
 import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 from queue import Queue
 from threading import Thread
@@ -20,6 +22,22 @@ from threading import Thread
 from pymisp import MISPEvent, MISPObject, MISPOrganisation
 
 import tldextract
+
+from bs4 import BeautifulSoup
+from bs4.element import Comment
+
+import urllib3
+
+
+import gensim
+import nltk
+import numpy as np
+from nltk.tokenize import word_tokenize, sent_tokenize
+from nltk.corpus import stopwords
+import string
+nltk.download('punkt')
+nltk.download('stopwords')
+
 
 
 ##########
@@ -127,6 +145,75 @@ app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
 
 
+stop_words = set(stopwords.words('english') + list(string.punctuation))
+
+def similarity(mali, text_file):
+    file_docs = []
+    file2_docs = []
+    avg_sims = []
+
+    tokens = sent_tokenize(mali)
+    for line in tokens:
+        file_docs.append(line)
+
+    gen_docs = [[w for w in word_tokenize(text.lower()) if w not in stop_words] 
+                for text in file_docs]
+
+    dictionary = gensim.corpora.Dictionary(gen_docs)
+    corpus = [dictionary.doc2bow(gen_doc) for gen_doc in gen_docs]
+    tf_idf = gensim.models.TfidfModel(corpus)
+    # for doc in tf_idf[corpus]:
+    #     print([[dictionary[id], np.around(freq, decimals=2)] for id, freq in doc])
+    sims = gensim.similarities.Similarity('./',tf_idf[corpus], num_features=len(dictionary))
+
+    tokens = sent_tokenize(text_file)
+    for line in tokens:
+        file2_docs.append(line)
+            
+    for line in file2_docs:
+        query_doc = [w for w in word_tokenize(line.lower()) if w not in stop_words]
+        query_doc_bow = dictionary.doc2bow(query_doc)
+        query_doc_tf_idf = tf_idf[query_doc_bow]
+        sum_of_sims = 0
+        sum_of_sims = np.sum(sims[query_doc_tf_idf], dtype=np.float32)
+        avg = sum_of_sims / len(file_docs)
+        avg_sims.append(avg)
+
+    total_avg = np.sum(avg_sims, dtype=np.float32)
+    percentage_of_similarity = round(float(total_avg) * 100)
+    
+    if percentage_of_similarity >= 100:
+        percentage_of_similarity = 100
+
+    return percentage_of_similarity
+
+
+def tag_visible(element):
+    if element.parent.name in ['style', 'script', 'head', 'title', 'meta', '[document]']:
+        return False
+    if isinstance(element, Comment):
+        return False
+    return True
+
+
+def text_from_html(body):
+    soup = BeautifulSoup(body, 'html.parser')
+    texts = soup.findAll(text=True)
+    visible_texts = filter(tag_visible, texts)  
+    return u" \n".join(t.strip() for t in visible_texts)
+
+
+def find_list_resources (tag, attribute,soup):
+   list = []
+   for x in soup.findAll(tag):
+       try:
+           list.append(x[attribute])
+       except KeyError:
+           pass
+   return(list)
+
+
+
 class Session():
     def __init__(self, url):
         self.id = str(uuid4())
@@ -148,6 +235,12 @@ class Session():
 
         self.md5Url = hashlib.md5(url.encode()).hexdigest()
 
+        self.website = ""
+        self.website_ressource = dict()
+
+        self.get_original_website_info()
+
+
     def scan(self):
         """Start all worker"""
         for i in range(len(self.variations_list)):
@@ -165,6 +258,94 @@ class Session():
         response = requests.get(f"https://ip.circl.lu/geolookup/{ip}")
         response_json = response.json()
         return response_json[0]['country_info']['Country'] 
+
+    def get_original_website_info(self):
+        url = f"http://{self.url}"
+        response = requests.get(url, verify=False, timeout=3)
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        self.website_ressource["image_scr"] = find_list_resources('img',"src",soup)   
+        self.website_ressource["script_src"] = find_list_resources('script',"src",soup)    
+        self.website_ressource["css_link"] = find_list_resources("link","href",soup)        
+        self.website_ressource["source_src"] = find_list_resources("source","src",soup) 
+        self.website_ressource["a_href"] = find_list_resources("a","href",soup) 
+
+        self.website = text_from_html(response.text)
+
+    def title_web_site(self, variation):
+        website_info = dict()
+        website_info["title"] = ""
+        website_info["sim"] = ""
+        website_info["diff_score"] = ""
+        website_info["ratio"] = ""
+
+        try:
+            url = f"http://{variation}"
+            response = requests.get(url, verify=False, timeout=3)
+
+            if "200" in str(response) or "401" in str(response):
+                
+                soup = BeautifulSoup(response.text, "html.parser")
+                title = soup.find_all('title', limit=1)
+
+                if title:
+                    t = str(title[0])
+                    t = t[7:]
+                    t = t[:-8]
+                    website_info["title"] = t
+
+                text = text_from_html(response.text)
+
+                if text and self.website:
+                    sim = str(similarity(self.website, text))
+                    website_info['sim'] = sim
+                    
+                    ressource_dict = dict()
+                    ressource_dict["image_scr"] = find_list_resources('img',"src",soup)   
+                    ressource_dict["script_src"] = find_list_resources('script',"src",soup)    
+                    ressource_dict["css_link"] = find_list_resources("link","href",soup)        
+                    ressource_dict["source_src"] = find_list_resources("source","src",soup) 
+                    ressource_dict["a_href"] = find_list_resources("a","href",soup) 
+
+                    cp_total = 0
+                    cp_diff = 0
+
+                    for r_to_check in self.website_ressource:
+                        for r in self.website_ressource[r_to_check]:
+                            cp_total += 1
+                            if r_to_check in ressource_dict:
+                                if r not in ressource_dict[r_to_check]:
+                                    cp_diff += 1
+
+                    ressource_diff = str(int((cp_diff/cp_total)*100))
+
+                    website_info['ressource_diff'] = ressource_diff
+
+                    if int(ressource_diff) != 0:
+                        if int(ressource_diff) < int(sim):
+                            ratio = round((int(ressource_diff)/int(sim))*int(ressource_diff), 2)
+                        else:
+                            ratio = round((int(sim)/int(ressource_diff))*int(sim), 2)
+                    elif int(sim) == 100:
+                        ratio = 0.05
+                    else:
+                        ratio = 0.5
+
+                    website_info['ratio'] = ratio
+
+                    # return sim, t, diff_score, ratio
+                    return website_info
+                return website_info
+        except urllib3.exceptions.NewConnectionError:
+            return website_info
+        except requests.exceptions.ConnectionError:
+            return website_info
+        except urllib3.exceptions.ReadTimeoutError:
+            return website_info
+        except Exception as e :
+            # import traceback
+            # traceback.print_exception(type(e), e, e.__traceback__)
+            return website_info
 
 
     def check_warning_list(self, data, work):
@@ -227,6 +408,13 @@ class Session():
                         data = ail_typo_squatting.dnsResolving([work[1][0]], self.url, "-", verbose=True)
                     else:
                         data = ail_typo_squatting.dnsResolving([work[1][0]], self.url, "")
+
+                    website_info = self.title_web_site(work[1][0])
+
+                    data[work[1][0]]['website_sim'] = website_info["sim"]
+                    data[work[1][0]]['website_title'] = website_info["title"]
+                    data[work[1][0]]['ressource_diff'] = website_info["ressource_diff"]
+                    data[work[1][0]]['ratio'] = website_info["ratio"]
 
                     data_keys = list(data[work[1][0]].keys())
 

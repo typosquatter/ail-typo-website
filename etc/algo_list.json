@@ -12,7 +12,12 @@
     "addition": [
         "Addition",
         "Add a characters in the domain name.",
-        "These typos are created by add a characters in the domain name."
+        "These typos are created by adding a characters in the domain name."
+    ],
+    "addDynamicDns":[
+        "Add dynamic DNS",
+        "Add dynamic DNS at the end of the domain.",
+        "These typos are created by adding a dynamic dns at the end of the original domain."
     ],
     "bitsquatting": [
         "BitSquatting",
