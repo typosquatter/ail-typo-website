@@ -8,3 +8,5 @@ redis
 tldextract
 pymisp
 beautifulsoup4
+gensim
+nltk
