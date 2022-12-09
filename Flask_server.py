@@ -713,7 +713,10 @@ def get_algo_from_redis(data_dict, md5Url):
 
 
 def set_info(domain, request):
-    ip = request.remote_addr
+    if 'x-forwarded-for' in request.headers:
+        ip = request.headers['x-forwarded-for']
+    else:
+        ip = request.remote_addr
     user_agent = str(request.user_agent)
     now = datetime.now()
     dt_string = now.strftime("%Y/%m/%d %H:%M:%S")
