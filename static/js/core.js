@@ -54,7 +54,7 @@ function fetchDomains() {
                 if (!this.asc){rows = rows.reverse()}
                 for (var i = 0; i < rows.length; i++){table.append(rows[i])}
             }),
-            $('<th>').text("PHISHING").css({"text-align": "center"}).click(function(){ 
+            $('<th>').text("SIMILARITY PROBABILITY").css({"text-align": "center"}).click(function(){ 
                 var table = $(this).parents('table').eq(0)
                 var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index(), !this.asc))
                 this.asc = !this.asc
