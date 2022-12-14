@@ -240,6 +240,9 @@ class Session():
 
         self.get_original_website_info()
 
+        self.list_ns = list()
+        self.list_mx = list()
+
 
     def scan(self):
         """Start all worker"""
@@ -411,10 +414,14 @@ class Session():
 
                     website_info = self.title_web_site(work[1][0])
 
-                    data[work[1][0]]['website_sim'] = website_info["sim"]
-                    data[work[1][0]]['website_title'] = website_info["title"]
-                    data[work[1][0]]['ressource_diff'] = website_info["ressource_diff"]
-                    data[work[1][0]]['ratio'] = website_info["ratio"]
+                    if "sim" in website_info:
+                        data[work[1][0]]['website_sim'] = website_info["sim"]
+                    if "title" in website_info:
+                        data[work[1][0]]['website_title'] = website_info["title"]
+                    if "ressource_diff" in website_info:
+                        data[work[1][0]]['ressource_diff'] = website_info["ressource_diff"]
+                    if "ratio" in website_info:
+                        data[work[1][0]]['ratio'] = website_info["ratio"]
 
                     data_keys = list(data[work[1][0]].keys())
 
@@ -428,11 +435,19 @@ class Session():
                         # Parse NS record to remove end point
                         for i in range(0, len(data[work[1][0]]['MX'])):
                             data[work[1][0]]['MX'][i] = data[work[1][0]]['MX'][i][:-1]
+                            for mx in self.list_mx:
+                                if data[work[1][0]]['MX'][i].split(" ")[1] in mx:
+                                    data[work[1][0]]['mx_identified'] = True
+                                    break
 
                     if 'NS' in data_keys:
                         # Parse NS record to remove end point
                         for i in range(0, len(data[work[1][0]]['NS'])):
                             data[work[1][0]]['NS'][i] = data[work[1][0]]['NS'][i][:-1]
+                            for ns in self.list_ns:
+                                if data[work[1][0]]['NS'][i] in ns:
+                                    data[work[1][0]]['ns_identified'] = True
+                                    break
 
                     data[work[1][0]]['variation'] = work[1][1]
                     self.add_data = True
@@ -749,6 +764,15 @@ def set_info(domain, request):
         red_user.set(ip, json.dumps(export_data))
 
 
+def valid_ns_mx(dns):
+    loc_list = list()
+    for element in dns.replace(" ", "").split(","):
+        if re.search(r"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-\_]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$", element):
+            loc_list.append(element)
+    return loc_list
+    
+
+
 ###############
 # FLASK ROUTE #
 ###############
@@ -786,6 +810,12 @@ def typo():
     md5Url = hashlib.md5(url.encode()).hexdigest()
 
     session = Session(url)
+
+    if data_dict['NS'].rstrip():
+        session.list_ns = valid_ns_mx(data_dict['NS'])
+
+    if data_dict['MX'].rstrip():
+        session.list_mx = valid_ns_mx(data_dict['MX'])
 
     if red.exists(md5Url):
         session.result_stopped = get_algo_from_redis(data_dict, md5Url)

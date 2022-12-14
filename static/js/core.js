@@ -63,6 +63,8 @@ function fetchDomains() {
             })
         ).appendTo('#data')
         $('<tr>').attr("id", "first_line").appendTo("#data")
+        $('<tr>').attr("id", "ns_identified").appendTo("#data")
+        $('<tr>').attr("id", "mx_identified").appendTo("#data")
         $('<tr>').attr("id", "bank_line").appendTo("#data")
         $('<tr>').attr("id", "university_line").appendTo("#data")
         $('<tr>').attr("id", "moz_line").appendTo("#data")
@@ -231,7 +233,7 @@ function fetchDomains() {
                         $("#majestic_line").after(current_tr)
                     }
                     else if (item[j]["tranco"]){
-                        first_td.append($('<b>').text("✔️").attr({title: "This domain is present in the top 100000 of Tranco list"}))
+                        first_td.append($('<b>').text("☑️ ").attr({title: "This domain is present in the top 100000 of Tranco list"}))
                         $("#tranco_line").after(current_tr)
                     }
                     else if (item[j]["moz-top500"]){
@@ -241,6 +243,14 @@ function fetchDomains() {
                     else if (item[j]['parking_domains']){
                         first_td.append($('<b>').text("🅿️ ").attr({title: "This domain is present in the list of parking domain"}))
                         $("#parking_line").after(current_tr)
+                    }
+                    else if(item[j]["ns_identified"]){
+                        first_td.append($('<b>').text("🆗 ").attr({title: "This domain is present in the list of ns"}))
+                        $("#ns_identified").after(current_tr)
+                    }
+                    else if(item[j]["mx_identified"]){
+                        first_td.append($('<b>').text("🆒 ").attr({title: "This domain is present in the list of mx"}))
+                        $("#mx_identified").after(current_tr)
                     }
                     else
                         $("#first_line").before(current_tr)
@@ -391,6 +401,11 @@ function actionScan() {
             data_dict['runAll'] = $('#runAll').val()
         }
 
+
+        data_dict['NS'] = $('#ns_input').val()
+        data_dict['MX'] = $('#mx_input').val()
+
+
         $.post({
             url: '/typo',
             data: JSON.stringify({
@@ -474,7 +489,7 @@ function comparer(index, asc) {
     return function(a, b) {
         var valA = getCellValue(a, index), valB = getCellValue(b, index)
         var valColumn0A = getCellValue(a, 0), valColumn0B = getCellValue(b, 0)
-        const icon = ['✅', '🅿️', '📚', '🏦', '🦊', '✔️']
+        const icon = ['✅', '🅿️', '📚', '🏦', '🦊', '☑️', '🆗', '🆒']
 
         const col0_valA = icon.some(e1 => valColumn0A.includes(e1))
         const col0_valB = icon.some(e1 => valColumn0B.includes(e1))
@@ -521,7 +536,7 @@ function comparer(index, asc) {
         
         
 
-        if (!valA && (col0_valA && index != 1) && (col0_valA && index != 5) && (col0_valA && index != 6) && (col0_valA && index != 7)) {
+        if ((!valA || col0_valA) && (index != 1 && index != 5 && index != 6 && index != 7)) {
             if (asc){
                 if (!valA)
                     valA = 'zzz'
@@ -536,7 +551,7 @@ function comparer(index, asc) {
             }
         }
          
-        if (!valB && (col0_valB && index != 1) && (col0_valB && index != 5) && (col0_valB && index != 6) && (col0_valB && index != 7)) {
+        if ((!valB || col0_valB) && (index != 1 && index != 5 && index != 6 && index != 7)) {
             if (asc){
                 if (!valB)
                     valB = 'zzz'
