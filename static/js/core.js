@@ -7,56 +7,56 @@ function fetchDomains() {
         $('<tr>').append(
             $('<th>').text("PERMUTATION").click(function(){
                 var table = $(this).parents('table').eq(0)
-                var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index(), !this.asc))
+                var rows = table.find('tr:gt(0)').toArray().sort(compare($(this).index(), !this.asc))
                 this.asc = !this.asc
                 if (!this.asc){rows = rows.reverse()}
                 for (var i = 0; i < rows.length; i++){table.append(rows[i])} }
             ),
             $('<th>').text("IP ADDRESS").click(function(){ 
                 var table = $(this).parents('table').eq(0)
-                var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index(), !this.asc))
+                var rows = table.find('tr:gt(0)').toArray().sort(compare($(this).index(), !this.asc))
                 this.asc = !this.asc
                 if (!this.asc){rows = rows.reverse()}
                 for (var i = 0; i < rows.length; i++){table.append(rows[i])} }
             ),
             $('<th>').text("NAME SERVER").click(function(){ 
                 var table = $(this).parents('table').eq(0)
-                var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index(), !this.asc))
+                var rows = table.find('tr:gt(0)').toArray().sort(compare($(this).index(), !this.asc))
                 this.asc = !this.asc
                 if (!this.asc){rows = rows.reverse()}
                 for (var i = 0; i < rows.length; i++){table.append(rows[i])} }
             ),
             $('<th>').text("MAIL SERVER").click(function(){ 
                 var table = $(this).parents('table').eq(0)
-                var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index(), !this.asc))
+                var rows = table.find('tr:gt(0)').toArray().sort(compare($(this).index(), !this.asc))
                 this.asc = !this.asc
                 if (!this.asc){rows = rows.reverse()}
                 for (var i = 0; i < rows.length; i++){table.append(rows[i])}
             }),
             $('<th>').text("WEB TITLE").click(function(){ 
                 var table = $(this).parents('table').eq(0)
-                var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index(), !this.asc))
+                var rows = table.find('tr:gt(0)').toArray().sort(compare($(this).index(), !this.asc))
                 this.asc = !this.asc
                 if (!this.asc){rows = rows.reverse()}
                 for (var i = 0; i < rows.length; i++){table.append(rows[i])}
             }),
             $('<th>').text("WEB SIMILARITY").css({"text-align": "center"}).click(function(){ 
                 var table = $(this).parents('table').eq(0)
-                var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index(), !this.asc))
+                var rows = table.find('tr:gt(0)').toArray().sort(compare($(this).index(), !this.asc))
                 this.asc = !this.asc
                 if (!this.asc){rows = rows.reverse()}
                 for (var i = 0; i < rows.length; i++){table.append(rows[i])}
             }),
             $('<th>').text("RESSOURCE DIFF").css({"text-align": "center"}).click(function(){ 
                 var table = $(this).parents('table').eq(0)
-                var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index(), !this.asc))
+                var rows = table.find('tr:gt(0)').toArray().sort(compare($(this).index(), !this.asc))
                 this.asc = !this.asc
                 if (!this.asc){rows = rows.reverse()}
                 for (var i = 0; i < rows.length; i++){table.append(rows[i])}
             }),
             $('<th>').text("SIMILARITY PROBABILITY").css({"text-align": "center"}).click(function(){ 
                 var table = $(this).parents('table').eq(0)
-                var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index(), !this.asc))
+                var rows = table.find('tr:gt(0)').toArray().sort(compare($(this).index(), !this.asc))
                 this.asc = !this.asc
                 if (!this.asc){rows = rows.reverse()}
                 for (var i = 0; i < rows.length; i++){table.append(rows[i])}
@@ -169,7 +169,7 @@ function fetchDomains() {
                     mxlengthdiv = ''
                 }
 
-
+                // Original domain
                 if(j == url){
                     $("#first_line").before($('<tr>').append(
                         $("<td>").text(permutation).css({"background-color": "#e9ecef", "vertical-align": "middle", "padding-left": "5px"}).append(
@@ -217,9 +217,11 @@ function fetchDomains() {
                         )
                     ))
                 }
+                // Variations domain
                 else{
                     first_td = $("<td>").css({"vertical-align": "middle", "padding-left": "5px"})
                     current_tr = $('<tr>')
+                    // Mark variation if has a match with warning list and add icon
                     if (item[j]["bank_domains"]){
                         first_td.append($('<b>').text("🏦 ").attr({title: "This domain is present in the list of known banking website"}))
                         $("#bank_line").after(current_tr)
@@ -256,6 +258,7 @@ function fetchDomains() {
                         $("#first_line").before(current_tr)
 
                     current_tr.append(
+                        // Permutation
                         first_td.append(
                             permutation,
                             $("<button>").text('🔗').attr({onclick: 'addClipboard(\'' + permutation + '\')', type: "button", class: "btn btn-light", title: "Copy this domain to clipboard"}).css({"background-color": "#ffffff"}),
@@ -265,6 +268,7 @@ function fetchDomains() {
                             $('</br>'),
                             $('<sup>').text(variation)
                         ),
+                        // IP address
                         $("<td>").css({"vertical-align": "middle"}).append(
                             $("<div>").append(
                                 ipv4,
@@ -278,25 +282,31 @@ function fetchDomains() {
                             ),
                             $('<sup>').text(geoip)
                         ),
+                        // NS
                         $("<td>").css({"vertical-align": "middle"}).append(
                             dns_ns,
                             $("<div>").attr("id", "span_length").append(nslength),
                             nslengthdiv
                         ),
+                        // MX
                         $("<td>").css({"vertical-align": "middle"}).append(
                             dns_mx,
                             $("<div>").attr("id", "span_length").append(mxlength),
                             mxlengthdiv
                         ),
+                        // Website title
                         $("<td>").css({"vertical-align": "middle"}).append(
                             website_title
                         ),
+                        // Website similarity
                         $("<td>").css({"vertical-align": "middle", "text-align": "center"}).append(
                             website_sim
                         ),
+                        // Website ressource difference
                         $("<td>").css({"vertical-align": "middle", "text-align": "center"}).append(
                             ressource_diff
                         ),
+                        // Ratio
                         $("<td>").css({"vertical-align": "middle", "text-align": "center"}).append(
                             ratio
                         )
@@ -310,6 +320,7 @@ function fetchDomains() {
 }
 
 function pollScan() {
+    // Loop function to update the list of identified domains
     $.getJSON('/status/' + $('#sid').val(), function(data) {
         pourcent = Math.round((data['complete']/data['total'])*100)
         $('#status').text('Processed ' + data['complete'] + ' of ' + data['total']);
@@ -319,11 +330,14 @@ function pollScan() {
             setTimeout(pollScan, 3000);
         } else {
             sid = $('#sid').val()
+            // Button Stop pressed
             if (data['stopped'])
                 $('#status').text('Stopped ! Identified ' + data['registered'] + ' registered.');
+            // Display result of the search
             else
                 $('#status').text('Found ' + data['complete'] + ' domains. Identified ' + data['registered'] + ' registered.');
             $('#scan').text('Search');
+            // Display download button
             $('#dropdownDownload').append(
                 $('<a>').attr({class: "btn btn-primary dropdown-toggle", href: "", role: "button", id: "dropdownMenuLink", "data-toggle": "dropdown", "aria-haspopup": "true", "aria-expanded": "false"}).text("Download"),
                 $('<div>').attr({class: "dropdown-menu", "aria-labelledby": "dropdownMenuLink"}).append(
@@ -336,6 +350,7 @@ function pollScan() {
                 )
             )
             // $('#share_button').css({'display': '', 'float': 'right'}).attr('title', "http://localhost:7005/" + $('#sid').val())
+            // Display Share button
             $('#share_button').css({'display': '', 'float': 'right'}).attr('title', "https://typosquatting-finder.circl.lu/" + $('#sid').val())
         }
         if (last_registered < data['registered']) {
@@ -346,6 +361,7 @@ function pollScan() {
 }
 
 
+// Add variation to clipboard
 function addClipboard(val){
     navigator.clipboard.writeText(val);
     $("#alert-clip").fadeTo(2000, 500).slideUp(500, function() {
@@ -353,6 +369,7 @@ function addClipboard(val){
     })
 }
 
+// Action on document ready
 $(document).ready(function() {
     $("#alert-clip").hide();
 
@@ -361,10 +378,13 @@ $(document).ready(function() {
     }
 })
 
+// List of algo used to generate variations
 algo_list = ["omission", "repetition", "changeOrder", "transposition", "replacement", "doubleReplacement", "addition", "keyboardInsertion", "missingDot", "stripDash", "vowelSwap", "addDash", "bitsquatting", "homoglyph", "commonMisspelling", "homophones", "wrongTld", "addTld", "subdomain", "singularPluralize", "changeDotDash", "addDynamicDns"]
 
 
+// Call when search button is pressed
 function actionScan() {
+    // No domain enter
     if (!$('#url').val()) {
         $('#status').text('↖ You need to type in a domain name first');
         return
@@ -385,10 +405,12 @@ function actionScan() {
         data_dict = {}
         data_dict['url'] = url
         flag = false
+        // Run all algorithms present in the list
         if (document.getElementById("runAll").checked){
             data_dict['runAll'] = $('#runAll').val()
             flag = true
         }else{
+            // Run only checked algorithms
             for( i=0; i< algo_list.length; i++){
                 if (document.getElementById(algo_list[i]).checked){
                     data_dict[algo_list[i]] = $('#' + algo_list[i]).val()
@@ -397,15 +419,16 @@ function actionScan() {
             }
         }
 
+        // If nothing is checked, run all algorihtms present in the list
         if(!flag){
             data_dict['runAll'] = $('#runAll').val()
         }
 
-
+        // NS and MX input
         data_dict['NS'] = $('#ns_input').val()
         data_dict['MX'] = $('#mx_input').val()
 
-
+        // Send request info to server to execute the search
         $.post({
             url: '/typo',
             data: JSON.stringify({
@@ -423,6 +446,7 @@ function actionScan() {
                 $('#status').text(xhr.responseJSON['message'] || 'Something went wrong');
             },
         });
+    // Stop button is pressed
     } else {
         stop();
         $.post({
@@ -435,10 +459,12 @@ function actionScan() {
     }
 }
 
+// Launch the search when Search button is pressed
 $('#scan').click(function() {
     actionScan();
 });
 
+// Launch the search when Enter key is pressed
 $('#url').on('keypress',function(e) {
     if(e.which == 13) {
         actionScan();
@@ -446,6 +472,7 @@ $('#url').on('keypress',function(e) {
 });
 
 
+// Check all algorithms' box when runAll box is checked
 function runAll(){
     if (document.getElementById("runAll").checked){
         for( i=0; i< algo_list.length; i++){
@@ -458,6 +485,7 @@ function runAll(){
     }
 };
 
+// Copy link to share search into clipboard
 function share_button(){
     navigator.clipboard.writeText("https://typosquatting-finder.circl.lu/" + $('#sid').val());
     // navigator.clipboard.writeText("http://localhost:7005/" + $('#sid').val());
@@ -466,6 +494,7 @@ function share_button(){
     })
 }
 
+// Display the session shared
 function checkShare(){
     $.get({
         url: '/share/' + $("#share").val(),
@@ -485,7 +514,8 @@ function checkShare(){
 
 }
 
-function comparer(index, asc) {
+// Sorting function
+function compare(index, asc) {
     return function(a, b) {
         var valA = getCellValue(a, index), valB = getCellValue(b, index)
         var valColumn0A = getCellValue(a, 0), valColumn0B = getCellValue(b, 0)
@@ -535,7 +565,6 @@ function comparer(index, asc) {
         }
         
         
-
         if ((!valA || col0_valA) && (index != 1 && index != 5 && index != 6 && index != 7)) {
             if (asc){
                 if (!valA)
