@@ -143,16 +143,19 @@ app = Flask(__name__)
 # app.debug = True
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
-
+###############
+# Similarity #
+##############
 
 stop_words = set(stopwords.words('english') + list(string.punctuation))
 
-def similarity(mali, text_file):
+def similarity(original_website, variation_website):
+    """Similiarity between original website and variation's one"""
     file_docs = []
     file2_docs = []
     avg_sims = []
 
-    tokens = sent_tokenize(mali)
+    tokens = sent_tokenize(original_website)
     for line in tokens:
         file_docs.append(line)
 
@@ -162,11 +165,9 @@ def similarity(mali, text_file):
     dictionary = gensim.corpora.Dictionary(gen_docs)
     corpus = [dictionary.doc2bow(gen_doc) for gen_doc in gen_docs]
     tf_idf = gensim.models.TfidfModel(corpus)
-    # for doc in tf_idf[corpus]:
-    #     print([[dictionary[id], np.around(freq, decimals=2)] for id, freq in doc])
-    sims = gensim.similarities.Similarity('./',tf_idf[corpus], num_features=len(dictionary))
+    sims = gensim.similarities.Similarity('./',tf_idf[corpus], num_features=50000)
 
-    tokens = sent_tokenize(text_file)
+    tokens = sent_tokenize(variation_website)
     for line in tokens:
         file2_docs.append(line)
             
@@ -187,8 +188,12 @@ def similarity(mali, text_file):
 
     return percentage_of_similarity
 
+##################
+# Web treatment #
+#################
 
 def tag_visible(element):
+    """Identified element present in specific balise"""
     if element.parent.name in ['style', 'script', 'head', 'title', 'meta', '[document]']:
         return False
     if isinstance(element, Comment):
@@ -197,25 +202,28 @@ def tag_visible(element):
 
 
 def text_from_html(body):
+    """Extract text from web page and remove text present in specific balise"""
     soup = BeautifulSoup(body, 'html.parser')
     texts = soup.findAll(text=True)
     visible_texts = filter(tag_visible, texts)  
     return u" \n".join(t.strip() for t in visible_texts)
 
 
-def find_list_resources (tag, attribute,soup):
-   list = []
-   for x in soup.findAll(tag):
-       try:
-           list.append(x[attribute])
-       except KeyError:
-           pass
-   return(list)
+def find_list_resources(tag, attribute, soup):
+    """Find ressource in web page list in attribute"""
+    list = []
+    for x in soup.findAll(tag):
+        try:
+            list.append(x[attribute])
+        except KeyError:
+            pass
+    return(list)
 
 
 
 class Session():
     def __init__(self, url):
+        """Constructor"""
         self.id = str(uuid4())
         self.url = url
         self.thread_count = num_threads
@@ -263,6 +271,7 @@ class Session():
         return response_json[0]['country_info']['Country'] 
 
     def get_original_website_info(self):
+        """Get website ressource of request domain"""
         url = f"http://{self.url}"
         response = requests.get(url, verify=False, timeout=3)
         soup = BeautifulSoup(response.text, "html.parser")
@@ -275,7 +284,8 @@ class Session():
 
         self.website = text_from_html(response.text)
 
-    def title_web_site(self, variation):
+    def get_website_info(self, variation):
+        """Get all info on variation's website and compare it to orginal one."""
         website_info = dict()
         website_info["title"] = ""
         website_info["sim"] = ""
@@ -286,23 +296,26 @@ class Session():
             url = f"http://{variation}"
             response = requests.get(url, verify=False, timeout=3)
 
+            # Variation has a website
             if "200" in str(response) or "401" in str(response):
-                
                 soup = BeautifulSoup(response.text, "html.parser")
                 title = soup.find_all('title', limit=1)
 
+                # Website has a title
                 if title:
                     t = str(title[0])
                     t = t[7:]
                     t = t[:-8]
                     website_info["title"] = t
 
+                # Get the text only
                 text = text_from_html(response.text)
 
                 if text and self.website:
                     sim = str(similarity(self.website, text))
                     website_info['sim'] = sim
                     
+                    # Extract ressources
                     ressource_dict = dict()
                     ressource_dict["image_scr"] = find_list_resources('img',"src",soup)   
                     ressource_dict["script_src"] = find_list_resources('script',"src",soup)    
@@ -310,6 +323,7 @@ class Session():
                     ressource_dict["source_src"] = find_list_resources("source","src",soup) 
                     ressource_dict["a_href"] = find_list_resources("a","href",soup) 
 
+                    # Ressources difference between original's website and varation one
                     cp_total = 0
                     cp_diff = 0
 
@@ -323,7 +337,8 @@ class Session():
                     ressource_diff = str(int((cp_diff/cp_total)*100))
 
                     website_info['ressource_diff'] = ressource_diff
-
+                    
+                    # Ratio to calculate the similarity probability
                     if int(ressource_diff) != 0:
                         if int(ressource_diff) < int(sim):
                             ratio = round((int(ressource_diff)/int(sim))*int(ressource_diff), 2)
@@ -352,6 +367,7 @@ class Session():
 
 
     def check_warning_list(self, data, work):
+        """Mark variations present in warning lists"""
         flag_parking = False
         data_keys = list(data[work[1][0]].keys())
 
@@ -393,7 +409,6 @@ class Session():
         """Threaded function for queue processing."""
         while not self.jobs.empty():
             work = self.jobs.get()   #fetch new work from the Queue
-            # print()
             try:
                 flag = False
                 ## If redis have some domains cached, don't resolve it again
@@ -412,7 +427,8 @@ class Session():
                     else:
                         data = ail_typo_squatting.dnsResolving([work[1][0]], self.url, "")
 
-                    website_info = self.title_web_site(work[1][0])
+                    # Compare original and current variation website
+                    website_info = self.get_website_info(work[1][0])
 
                     if "sim" in website_info:
                         data[work[1][0]]['website_sim'] = website_info["sim"]
@@ -435,6 +451,7 @@ class Session():
                         # Parse NS record to remove end point
                         for i in range(0, len(data[work[1][0]]['MX'])):
                             data[work[1][0]]['MX'][i] = data[work[1][0]]['MX'][i][:-1]
+                            # Mark variation if present in MX list
                             for mx in self.list_mx:
                                 if data[work[1][0]]['MX'][i].split(" ")[1] in mx:
                                     data[work[1][0]]['mx_identified'] = True
@@ -444,6 +461,7 @@ class Session():
                         # Parse NS record to remove end point
                         for i in range(0, len(data[work[1][0]]['NS'])):
                             data[work[1][0]]['NS'][i] = data[work[1][0]]['NS'][i][:-1]
+                            # Mark variation if present in NS list
                             for ns in self.list_ns:
                                 if data[work[1][0]]['NS'][i] in ns:
                                     data[work[1][0]]['ns_identified'] = True
@@ -454,7 +472,6 @@ class Session():
 
                     data = self.check_warning_list(data, work)
 
-                    
                 self.result[work[0]] = data         #Store data back at correct index
                 self.result_algo[work[1][1]].append(data)
             except Exception as e:
@@ -525,11 +542,9 @@ class Session():
         for variation in self.variations_list:
             s += variation[0] + '\n'
         return s
-
-    def dl_domains(self):
-        return self.result_algo
         
     def saveInfo(self):
+        """Save session info to redis"""
         saveInfo = dict()
         saveInfo['url'] = self.url
         saveInfo['result_list'] = self.result
@@ -570,15 +585,13 @@ class Session():
         except:
             pass
 
-    def dl_misp_feed():
-        return
-
 
 ##########
 ## MISP ##
 ##########
 
 def create_misp_event(sid):
+    """Create a MISP event for MISP feed"""
     sess_info = get_session_info(sid)
 
     org = MISPOrganisation()
@@ -597,6 +610,7 @@ def create_misp_event(sid):
 
 
 def feed_meta_generator(event, sid):
+    """Generate MISP feed manifest"""
     manifests = {}
     hashes: List[str] = []
 
@@ -611,6 +625,7 @@ def feed_meta_generator(event, sid):
 
 
 def dl_misp_feed(sid, store=True):
+    """Generate MISP feed to download"""
     event = create_misp_event(sid)
     result_list = dl_domains(sid)
 
@@ -655,9 +670,11 @@ def dl_misp_feed(sid, store=True):
 #####################
 
 def get_session_info(sid):
+    """Get session info from redis"""
     return json.loads(red.get(sid).decode())
 
 def status_redis(sid):
+    """Get session status from redis"""
     sess_info = get_session_info(sid)
 
     total = len(sess_info['variations_list'])
@@ -674,11 +691,13 @@ def status_redis(sid):
         }
 
 def domains_redis(sid):
+    """Get identified domains list from redis"""
     sess_info = get_session_info(sid)
     domain = [x for x in sess_info['result_list'].copy() for e in x if not x[e]["NotExist"]]
     return domain
 
 def dl_domains(sid):
+    """Get identified domains list from redis to download"""
     sess_info = get_session_info(sid)
     request_algo = sess_info["request_algo"]
     request_algo.insert(0, 'original')
@@ -699,6 +718,7 @@ def dl_domains(sid):
     return result
 
 def dl_list(sid):
+    """Get variations list from redis to download"""
     sess_info = get_session_info(sid)
 
     s = ''
@@ -708,6 +728,7 @@ def dl_list(sid):
 
 
 def get_algo_from_redis(data_dict, md5Url):
+    """Get resolved domains list from redis"""
     request_algo = list()
     result_list = dict()
 
@@ -728,6 +749,7 @@ def get_algo_from_redis(data_dict, md5Url):
 
 
 def set_info(domain, request):
+    """Set user info to redis"""
     if 'x-forwarded-for' in request.headers:
         ip = request.headers['x-forwarded-for']
     else:
@@ -765,6 +787,7 @@ def set_info(domain, request):
 
 
 def valid_ns_mx(dns):
+    """Regex to validate NS and MX entry"""
     loc_list = list()
     for element in dns.replace(" ", "").split(","):
         if re.search(r"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-\_]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$", element):
@@ -889,10 +912,12 @@ def download_list(sid):
 
 @app.route("/<sid>")
 def share(sid):
+    """Share a research"""
     return render_template("home_page.html", algo_list=algo_list, len_table=len(list(algo_list.keys())), keys=list(algo_list.keys()), share=sid)
 
 @app.route("/share/<sid>")
 def share_info(sid):
+    """Get share info from redis"""
     if red.exists(sid):
         sess_info = get_session_info(sid)
         return sess_info['url'], 200
@@ -919,6 +944,7 @@ def download_misp_feed(sid):
 
 @app.route("/download/<sid>/misp-feed/<file>")
 def download_misp(sid, file):
+    """Download a specific MISP feed file"""
     if file == 'hashes.csv':
         return jsonify(json.loads(red.get(f"event_hashes:{sid}").decode())), 200
     elif file == 'manifest.json':
@@ -934,6 +960,7 @@ def download_misp(sid, file):
 
 @app.route("/download/<sid>/misp-json")
 def download_misp_json(sid):
+    """Download MISP feed as json format"""
     event = dl_misp_feed(sid, store=False)
     return jsonify(event), 200, {'Content-Disposition': f"attachment; filename={event['Event']['uuid']}.json"}
 
@@ -944,6 +971,7 @@ def download_misp_json(sid):
 
 @app.route("/api/<url>", methods=['GET'])
 def api(url):
+    """Special api route"""
     data_dict = dict(request.args)
     loc_algo_list = list(algo_list.keys())
     loc_algo_list.append("runAll")
