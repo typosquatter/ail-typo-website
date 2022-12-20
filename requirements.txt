@@ -10,3 +10,4 @@ pymisp
 beautifulsoup4
 gensim
 nltk
+scikit-learn

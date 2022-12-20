@@ -29,6 +29,9 @@ from bs4.element import Comment
 import urllib3
 
 
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction import text
+
 import gensim
 import nltk
 import numpy as np
@@ -165,7 +168,7 @@ def similarity(original_website, variation_website):
     dictionary = gensim.corpora.Dictionary(gen_docs)
     corpus = [dictionary.doc2bow(gen_doc) for gen_doc in gen_docs]
     tf_idf = gensim.models.TfidfModel(corpus)
-    sims = gensim.similarities.Similarity('./',tf_idf[corpus], num_features=50000)
+    sims = gensim.similarities.Similarity('./',tf_idf[corpus], num_features=len(dictionary))
 
     tokens = sent_tokenize(variation_website)
     for line in tokens:
@@ -187,6 +190,16 @@ def similarity(original_website, variation_website):
         percentage_of_similarity = 100
 
     return percentage_of_similarity
+
+
+ENGLISH_STOP_WORDS = set( stopwords.words('english') ).union( set(text.ENGLISH_STOP_WORDS) ).union(set(string.punctuation))
+
+def sk_similarity(doc1, doc2):
+    vectorizer = TfidfVectorizer(stop_words=list(ENGLISH_STOP_WORDS), max_features=5000)
+    tfidf = vectorizer.fit_transform([doc1, doc2])
+
+    return round(((tfidf * tfidf.T).toarray())[0,1] * 100)
+
 
 ##################
 # Web treatment #
@@ -312,7 +325,8 @@ class Session():
                 text = text_from_html(response.text)
 
                 if text and self.website:
-                    sim = str(similarity(self.website, text))
+                    # sim = str(similarity(self.website, text))
+                    sim = str(sk_similarity(self.website, text))
                     website_info['sim'] = sim
                     
                     # Extract ressources
