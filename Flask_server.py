@@ -3,6 +3,7 @@ import ail_typo_squatting
 import math
 from uuid import uuid4
 import configparser
+import argparse
 import os
 import json
 import redis
@@ -41,6 +42,14 @@ import string
 nltk.download('punkt')
 nltk.download('stopwords')
 
+
+#############
+# Arg Parse #
+#############
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-c", "--nocache", help="Disabled caching functionality", action="store_true")
+args = parser.parse_args()
 
 
 ##########
@@ -83,10 +92,13 @@ if 'redis_warning_list' in config:
 else:
     redis_warning_list = redis.Redis(host='localhost', port=6379, db=2)
 
-if 'cache' in config:
-    cache_expire = config['cache']['expire']
+if not args.nocache:
+    if 'cache' in config:
+        cache_expire = config['cache']['expire']
+    else:
+        cache_expire = 86400
 else:
-    cache_expire = 86400
+    cache_expire = 0
 
 if 'cache_session' in config:
     cache_expire_session = config['cache_session']['expire']
@@ -426,7 +438,7 @@ class Session():
             try:
                 flag = False
                 ## If redis have some domains cached, don't resolve it again
-                if self.result_stopped:
+                if self.result_stopped and not args.nocache:
                     if work[1][1] in list(self.result_stopped.keys()):
                         for domain in self.result_stopped[work[1][1]]:
                             if list(domain.keys())[0] == work[1][0]:
