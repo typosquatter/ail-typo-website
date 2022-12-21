@@ -297,17 +297,21 @@ class Session():
 
     def get_original_website_info(self):
         """Get website ressource of request domain"""
-        url = f"http://{self.url}"
-        response = requests.get(url, verify=False, timeout=3)
-        soup = BeautifulSoup(response.text, "html.parser")
+        try:
+            url = f"http://{self.url}"
+            response = requests.get(url, verify=False, timeout=3)
+            soup = BeautifulSoup(response.text, "html.parser")
 
-        self.website_ressource["image_scr"] = find_list_resources('img',"src",soup)   
-        self.website_ressource["script_src"] = find_list_resources('script',"src",soup)    
-        self.website_ressource["css_link"] = find_list_resources("link","href",soup)        
-        self.website_ressource["source_src"] = find_list_resources("source","src",soup) 
-        self.website_ressource["a_href"] = find_list_resources("a","href",soup) 
+            self.website_ressource["image_scr"] = find_list_resources('img',"src",soup)   
+            self.website_ressource["script_src"] = find_list_resources('script',"src",soup)    
+            self.website_ressource["css_link"] = find_list_resources("link","href",soup)        
+            self.website_ressource["source_src"] = find_list_resources("source","src",soup) 
+            self.website_ressource["a_href"] = find_list_resources("a","href",soup) 
 
-        self.website = text_from_html(response.text)
+            self.website = text_from_html(response.text)
+        except:
+            pass
+            # return "Original Website unreachable"
 
     def get_website_info(self, variation):
         """Get all info on variation's website and compare it to orginal one."""
@@ -536,7 +540,7 @@ class Session():
         self.jobs.queue.clear()
 
         for worker in self.threads:
-            worker.join(1.5)
+            worker.join(3.5)
 
         self.threads.clear()
         self.saveInfo()
@@ -854,17 +858,24 @@ def typo():
     else:
         return jsonify({'message': 'Please enter a valid domain name'}), 400
 
+    if not domain_extract.domain:
+        return jsonify({"message": "Only a TLD is identified. Try adding something like 'www.' before your domain"}), 400
+
     set_info(url, request)
 
     md5Url = hashlib.md5(url.encode()).hexdigest()
 
     session = Session(url)
+    session.list_ns = list()
+    session.list_mx = list()
 
-    if data_dict['NS'].rstrip():
-        session.list_ns = valid_ns_mx(data_dict['NS'])
+    if 'NS' in data_dict:
+        if data_dict['NS'].rstrip():
+            session.list_ns = valid_ns_mx(data_dict['NS'])
 
-    if data_dict['MX'].rstrip():
-        session.list_mx = valid_ns_mx(data_dict['MX'])
+    if 'MX' in data_dict:
+        if data_dict['MX'].rstrip():
+            session.list_mx = valid_ns_mx(data_dict['MX'])
 
     if red.exists(md5Url):
         session.result_stopped = get_algo_from_redis(data_dict, md5Url)
