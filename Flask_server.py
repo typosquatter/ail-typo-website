@@ -853,13 +853,13 @@ def typo():
     url = data_dict["url"]
 
     domain_extract = tldextract.extract(url)
+
+    res = ail_typo_squatting.check_valid_domain(domain_extract)
+    if res:
+        return jsonify({'message': res}), 400
+        
     if domain_extract.suffix:
         url = '.'.join(part for part in domain_extract if part)
-    else:
-        return jsonify({'message': 'Please enter a valid domain name'}), 400
-
-    if not domain_extract.domain:
-        return jsonify({"message": "Only a TLD is identified. Try adding something like 'www.' before your domain"}), 400
 
     set_info(url, request)
 
