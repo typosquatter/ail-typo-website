@@ -269,6 +269,7 @@ class Session():
             self.website_ressource["css_link"] = find_list_resources("link","href",soup)        
             self.website_ressource["source_src"] = find_list_resources("source","src",soup) 
             self.website_ressource["a_href"] = find_list_resources("a","href",soup) 
+            self.website_ressource["form_action"] = find_list_resources("form","action",soup) 
 
             self.website = text_from_html(response.text)
         except:
@@ -312,7 +313,8 @@ class Session():
                     ressource_dict["script_src"] = find_list_resources('script',"src",soup)    
                     ressource_dict["css_link"] = find_list_resources("link","href",soup)        
                     ressource_dict["source_src"] = find_list_resources("source","src",soup) 
-                    ressource_dict["a_href"] = find_list_resources("a","href",soup) 
+                    ressource_dict["a_href"] = find_list_resources("a","href",soup)
+                    ressource_dict["form_action"] = find_list_resources("form","action",soup) 
 
                     # Ressources difference between original's website and varation one
                     cp_total = 0
