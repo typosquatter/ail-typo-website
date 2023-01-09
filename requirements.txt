@@ -1,13 +1,12 @@
 requests
-flask==2.1.2
+flask
 flask-restx
-werkzeug==2.1.2
+werkzeug
 ail-typo-squatting
 idna
 redis
 tldextract
 pymisp
 beautifulsoup4
-gensim
 nltk
 scikit-learn

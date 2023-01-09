@@ -1,44 +1,46 @@
-from flask import Flask, render_template, url_for, request, jsonify
-import ail_typo_squatting
-import math
-from uuid import uuid4
-import configparser
-import argparse
-import os
+import os, re
 import json
-import redis
+import math
 import hashlib
+import argparse
+import configparser
+from uuid import uuid4
 from datetime import datetime
-import re
 
-from typing import List
+from flask import Flask, render_template, url_for, request, jsonify
+
+import ail_typo_squatting
+
+import redis
 
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+import urllib3
 
 from queue import Queue
 from threading import Thread
 
 from pymisp import MISPEvent, MISPObject, MISPOrganisation
+from typing import List
 
 import tldextract
 
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 
-import urllib3
 
+##############
+# Similarity #
+#   Import   #
+##############
+import string
 
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.feature_extraction import text
+from sklearn.feature_extraction import text as sklearn_text
 
-import gensim
 import nltk
-import numpy as np
-from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk.corpus import stopwords
-import string
 nltk.download('punkt')
 nltk.download('stopwords')
 
@@ -164,47 +166,7 @@ app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
 stop_words = set(stopwords.words('english') + list(string.punctuation))
 
-def similarity(original_website, variation_website):
-    """Similiarity between original website and variation's one"""
-    file_docs = []
-    file2_docs = []
-    avg_sims = []
-
-    tokens = sent_tokenize(original_website)
-    for line in tokens:
-        file_docs.append(line)
-
-    gen_docs = [[w for w in word_tokenize(text.lower()) if w not in stop_words] 
-                for text in file_docs]
-
-    dictionary = gensim.corpora.Dictionary(gen_docs)
-    corpus = [dictionary.doc2bow(gen_doc) for gen_doc in gen_docs]
-    tf_idf = gensim.models.TfidfModel(corpus)
-    sims = gensim.similarities.Similarity('./',tf_idf[corpus], num_features=len(dictionary))
-
-    tokens = sent_tokenize(variation_website)
-    for line in tokens:
-        file2_docs.append(line)
-            
-    for line in file2_docs:
-        query_doc = [w for w in word_tokenize(line.lower()) if w not in stop_words]
-        query_doc_bow = dictionary.doc2bow(query_doc)
-        query_doc_tf_idf = tf_idf[query_doc_bow]
-        sum_of_sims = 0
-        sum_of_sims = np.sum(sims[query_doc_tf_idf], dtype=np.float32)
-        avg = sum_of_sims / len(file_docs)
-        avg_sims.append(avg)
-
-    total_avg = np.sum(avg_sims, dtype=np.float32)
-    percentage_of_similarity = round(float(total_avg) * 100)
-    
-    if percentage_of_similarity >= 100:
-        percentage_of_similarity = 100
-
-    return percentage_of_similarity
-
-
-ENGLISH_STOP_WORDS = set( stopwords.words('english') ).union( set(text.ENGLISH_STOP_WORDS) ).union(set(string.punctuation))
+ENGLISH_STOP_WORDS = set( stopwords.words('english') ).union( set(sklearn_text.ENGLISH_STOP_WORDS) ).union(set(string.punctuation))
 
 def sk_similarity(doc1, doc2):
     vectorizer = TfidfVectorizer(stop_words=list(ENGLISH_STOP_WORDS), max_features=5000)
@@ -341,7 +303,6 @@ class Session():
                 text = text_from_html(response.text)
 
                 if text and self.website:
-                    # sim = str(similarity(self.website, text))
                     sim = str(sk_similarity(self.website, text))
                     website_info['sim'] = sim
                     
@@ -381,7 +342,6 @@ class Session():
 
                     website_info['ratio'] = ratio
 
-                    # return sim, t, diff_score, ratio
                     return website_info
                 return website_info
         except urllib3.exceptions.NewConnectionError:
