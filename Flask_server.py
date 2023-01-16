@@ -478,7 +478,7 @@ def create_misp_event(sid):
 
     event = MISPEvent()
 
-    event.info = sess_info['url']  # Required
+    event.info = f"Typosquatting for: {sess_info['url']}"  # Required
     event.distribution = 0  # Optional, defaults to MISP.default_event_distribution in MISP config
     event.threat_level_id = 4  # Optional, defaults to MISP.default_event_threat_level in MISP config
     event.analysis = 2  # Optional, defaults to 0 (initial analysis)
@@ -506,28 +506,47 @@ def dl_misp_feed(sid, store=True):
     """Generate MISP feed to download"""
     event = create_misp_event(sid)
     result_list = dl_domains(sid)
+    sess_info = get_session_info(sid)
+    domain_identified = domains_redis(sid)
 
-    misp_object = MISPObject('dns-record', standalone=False)
+    misp_object = MISPObject('typosquatting-finder', standalone=False)
+    qname = misp_object.add_attribute('research-domain', value=sess_info['url'])
+    qname.add_tag({'name': "typosquatting:research", 'colour': "#00730d"})
+    misp_object.add_attribute('variations-number', value=len(sess_info["result_list"]))
+    misp_object.add_attribute('variations-found-number', value=len(domain_identified))
+    event.add_object(misp_object)
 
     for algo in result_list:
         for i in range(0, len(result_list[algo])):
             for domain in result_list[algo][i]:
-                misp_object = MISPObject('dns-record', standalone=False)
+                misp_object = MISPObject('typosquatting-finder-result', standalone=False)
                 qname = misp_object.add_attribute('queried-domain', value=domain)
                 qname.add_tag({'name': f"typosquatting:{algo}", 'colour': "#e68b48"})
 
-                if 'A' in result_list[algo][i][domain].keys():
+                if 'A' in result_list[algo][i][domain]:
                     for a in result_list[algo][i][domain]['A']:
                         misp_object.add_attribute('a-record', value=a)
-                if 'AAAA' in result_list[algo][i][domain].keys():
+                if 'AAAA' in result_list[algo][i][domain]:
                     for aaaa in result_list[algo][i][domain]['AAAA']:
                         misp_object.add_attribute('aaaa-record', value=aaaa)
-                if 'MX' in result_list[algo][i][domain].keys():
+                if 'MX' in result_list[algo][i][domain]:
                     for mx in result_list[algo][i][domain]['MX']:
                         misp_object.add_attribute('mx-record', value=mx)
-                if 'NS' in result_list[algo][i][domain].keys():
+                if 'NS' in result_list[algo][i][domain]:
                     for ns in result_list[algo][i][domain]['NS']:
                         misp_object.add_attribute('ns-record', value=ns)
+
+                if "website_title" in result_list[algo][i][domain] and result_list[algo][i][domain]["website_title"]:
+                    misp_object.add_attribute('website-title', value=result_list[algo][i][domain]["website_title"])
+
+                if "website_sim" in result_list[algo][i][domain] and result_list[algo][i][domain]["website_sim"]:
+                    misp_object.add_attribute('website-similarity', value=result_list[algo][i][domain]["website_sim"])
+
+                if "ressource_diff" in result_list[algo][i][domain] and result_list[algo][i][domain]["ressource_diff"]:
+                    misp_object.add_attribute('website-ressource-diff', value=result_list[algo][i][domain]["ressource_diff"])
+
+                if "ratio" in result_list[algo][i][domain] and result_list[algo][i][domain]["ratio"]:
+                    misp_object.add_attribute('ratio-similarity', value=result_list[algo][i][domain]["ratio"])
 
                 event.add_object(misp_object)
 

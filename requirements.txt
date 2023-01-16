@@ -10,3 +10,4 @@ pymisp
 beautifulsoup4
 nltk
 scikit-learn
+similarius
