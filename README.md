@@ -10,13 +10,17 @@ Website for [ail-typo-squatting](https://github.com/ail-project/ail-typo-squatti
 ## Requirements
 
 - [requests](https://github.com/psf/requests)
-- [flask](https://flask.palletsprojects.com/en/2.1.x/) == 2.1.2
+- [flask](https://flask.palletsprojects.com/en/2.1.x/)
 - [flask-restx](https://github.com/python-restx/flask-restx)
-  - [werkzeug](https://github.com/pallets/werkzeug/) == 2.1.2
+  - [werkzeug](https://github.com/pallets/werkzeug/)
 - [ail-typo-squatting](https://github.com/ail-project/ail-typo-squatting)
 - [idna](https://github.com/kjd/idna)
 - [redis](https://github.com/redis/redis-py)
-- [pyfaup](https://github.com/stricaud/faup)
+- [tldextract](https://github.com/john-kurkowski/tldextract )
+- [pymisp](https://github.com/MISP/PyMISP)
+- [beautifulsoup4](https://pypi.org/project/beautifulsoup4/)
+- [nltk](https://github.com/nltk/nltk)
+- [scikit-learn](https://github.com/scikit-learn/scikit-learn)
 
 
 

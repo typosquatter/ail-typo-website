@@ -14,9 +14,10 @@ import ail_typo_squatting
 import redis
 
 import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
 import urllib3
+from urllib3.exceptions import InsecureRequestWarning
+urllib3.disable_warnings(InsecureRequestWarning)
 
 from queue import Queue
 from threading import Thread
@@ -27,22 +28,8 @@ from typing import List
 import tldextract
 
 from bs4 import BeautifulSoup
-from bs4.element import Comment
 
-
-##############
-# Similarity #
-#   Import   #
-##############
-import string
-
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.feature_extraction import text as sklearn_text
-
-import nltk
-from nltk.corpus import stopwords
-nltk.download('punkt')
-nltk.download('stopwords')
+from similarius import get_website, extract_text_ressource, sk_similarity, ressource_difference, ratio
 
 
 #############
@@ -160,53 +147,6 @@ app = Flask(__name__)
 # app.debug = True
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
-###############
-# Similarity #
-##############
-
-stop_words = set(stopwords.words('english') + list(string.punctuation))
-
-ENGLISH_STOP_WORDS = set( stopwords.words('english') ).union( set(sklearn_text.ENGLISH_STOP_WORDS) ).union(set(string.punctuation))
-
-def sk_similarity(doc1, doc2):
-    vectorizer = TfidfVectorizer(stop_words=list(ENGLISH_STOP_WORDS), max_features=5000)
-    tfidf = vectorizer.fit_transform([doc1, doc2])
-
-    return round(((tfidf * tfidf.T).toarray())[0,1] * 100)
-
-
-##################
-# Web treatment #
-#################
-
-def tag_visible(element):
-    """Identified element present in specific balise"""
-    if element.parent.name in ['style', 'script', 'head', 'title', 'meta', '[document]']:
-        return False
-    if isinstance(element, Comment):
-        return False
-    return True
-
-
-def text_from_html(body):
-    """Extract text from web page and remove text present in specific balise"""
-    soup = BeautifulSoup(body, 'html.parser')
-    texts = soup.findAll(text=True)
-    visible_texts = filter(tag_visible, texts)  
-    return u" \n".join(t.strip() for t in visible_texts)
-
-
-def find_list_resources(tag, attribute, soup):
-    """Find ressource in web page list in attribute"""
-    list = []
-    for x in soup.findAll(tag):
-        try:
-            list.append(x[attribute])
-        except KeyError:
-            pass
-    return(list)
-
-
 
 class Session():
     def __init__(self, url):
@@ -259,22 +199,10 @@ class Session():
 
     def get_original_website_info(self):
         """Get website ressource of request domain"""
-        try:
-            url = f"http://{self.url}"
-            response = requests.get(url, verify=False, timeout=3)
-            soup = BeautifulSoup(response.text, "html.parser")
 
-            self.website_ressource["image_scr"] = find_list_resources('img',"src",soup)   
-            self.website_ressource["script_src"] = find_list_resources('script',"src",soup)    
-            self.website_ressource["css_link"] = find_list_resources("link","href",soup)        
-            self.website_ressource["source_src"] = find_list_resources("source","src",soup) 
-            self.website_ressource["a_href"] = find_list_resources("a","href",soup) 
-            self.website_ressource["form_action"] = find_list_resources("form","action",soup) 
+        response = get_website(self.url)
+        self.website, self.website_ressource = extract_text_ressource(response.text)
 
-            self.website = text_from_html(response.text)
-        except:
-            pass
-            # return "Original Website unreachable"
 
     def get_website_info(self, variation):
         """Get all info on variation's website and compare it to orginal one."""
@@ -284,10 +212,8 @@ class Session():
         website_info["diff_score"] = ""
         website_info["ratio"] = ""
 
-        try:
-            url = f"http://{variation}"
-            response = requests.get(url, verify=False, timeout=3)
-
+        response = get_website(variation)
+        if response:
             # Variation has a website
             if "200" in str(response) or "401" in str(response):
                 soup = BeautifulSoup(response.text, "html.parser")
@@ -300,62 +226,22 @@ class Session():
                     t = t[:-8]
                     website_info["title"] = t
 
-                # Get the text only
-                text = text_from_html(response.text)
+                # Get the text only and ressources
+                text, ressource_dict = extract_text_ressource(response.text)
 
                 if text and self.website:
                     sim = str(sk_similarity(self.website, text))
                     website_info['sim'] = sim
                     
-                    # Extract ressources
-                    ressource_dict = dict()
-                    ressource_dict["image_scr"] = find_list_resources('img',"src",soup)   
-                    ressource_dict["script_src"] = find_list_resources('script',"src",soup)    
-                    ressource_dict["css_link"] = find_list_resources("link","href",soup)        
-                    ressource_dict["source_src"] = find_list_resources("source","src",soup) 
-                    ressource_dict["a_href"] = find_list_resources("a","href",soup)
-                    ressource_dict["form_action"] = find_list_resources("form","action",soup) 
-
                     # Ressources difference between original's website and varation one
-                    cp_total = 0
-                    cp_diff = 0
-
-                    for r_to_check in self.website_ressource:
-                        for r in self.website_ressource[r_to_check]:
-                            cp_total += 1
-                            if r_to_check in ressource_dict:
-                                if r not in ressource_dict[r_to_check]:
-                                    cp_diff += 1
-
-                    ressource_diff = str(int((cp_diff/cp_total)*100))
+                    ressource_diff = ressource_difference(self.website_ressource, ressource_dict)
 
                     website_info['ressource_diff'] = ressource_diff
                     
                     # Ratio to calculate the similarity probability
-                    if int(ressource_diff) != 0:
-                        if int(ressource_diff) < int(sim):
-                            ratio = round((int(ressource_diff)/int(sim))*int(ressource_diff), 2)
-                        else:
-                            ratio = round((int(sim)/int(ressource_diff))*int(sim), 2)
-                    elif int(sim) == 100:
-                        ratio = 0.05
-                    else:
-                        ratio = 0.5
+                    website_info['ratio'] = ratio(ressource_diff, sim)
 
-                    website_info['ratio'] = ratio
-
-                    return website_info
-                return website_info
-        except urllib3.exceptions.NewConnectionError:
-            return website_info
-        except requests.exceptions.ConnectionError:
-            return website_info
-        except urllib3.exceptions.ReadTimeoutError:
-            return website_info
-        except Exception as e :
-            # import traceback
-            # traceback.print_exception(type(e), e, e.__traceback__)
-            return website_info
+        return website_info
 
 
     def check_warning_list(self, data, work):
