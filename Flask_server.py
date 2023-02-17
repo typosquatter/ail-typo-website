@@ -201,7 +201,10 @@ class Session():
         """Get website ressource of request domain"""
 
         response = get_website(self.url)
-        self.website, self.website_ressource = extract_text_ressource(response.text)
+        if not response:
+            self.website, self.website_ressource = extract_text_ressource("")
+        else:
+            self.website, self.website_ressource = extract_text_ressource(response.text)
 
 
     def get_website_info(self, variation):

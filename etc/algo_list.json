@@ -64,6 +64,11 @@
         "Delete a dot from the domain name.",
         "These typos are created by deleting a dot from the domain name."
     ],
+    "numeralSwap": [
+        "Numeral Swap",
+        "Change a numbers to words and vice versa.",
+        "These typos are created by changing a number to words and vice versa. For example, circlone.lu becomes circl1.lu."
+    ],
     "omission":[
         "Omission",
         "Leave out a letter of the domain name.",
@@ -108,6 +113,11 @@
         "Wrong TLD",
         "Change the original top level domain to another.",
         "These typos are created by changing the original top level domain to another. For example, www.trademe.co.nz becomes www.trademe.co.mz and www.google.com becomes www.google.org Uses the 19 most common top level domains."
+    ],
+    "wrongSld": [
+        "Wrong SLD",
+        "Change the original second level domain to another.",
+        "These typos are created by changing the original second level domain to another. For example, www.trademe.co.uk becomes www.trademe.ac.uk and www.google.com will still be www.google.com ."
     ]
     
 }
