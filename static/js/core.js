@@ -54,13 +54,16 @@ function fetchDomains() {
                 if (!this.asc){rows = rows.reverse()}
                 for (var i = 0; i < rows.length; i++){table.append(rows[i])}
             }),
-            $('<th>').text("SIMILARITY PROBABILITY").css({"text-align": "center"}).click(function(){ 
+            $('<th>').text("SIMILARITY PROB").css({"text-align": "center"}).click(function(){ 
                 var table = $(this).parents('table').eq(0)
                 var rows = table.find('tr:gt(0)').toArray().sort(compare($(this).index(), !this.asc))
                 this.asc = !this.asc
                 if (!this.asc){rows = rows.reverse()}
                 for (var i = 0; i < rows.length; i++){table.append(rows[i])}
-            })
+            }).append(
+                $('<span>').text(" "),
+                $('<i>').attr({"class": "fa fa-question", title: "This is the result of the relation between \n'web similarity' and 'ressource diff'"})
+            )
         ).appendTo('#data')
         $('<tr>').attr("id", "first_line").appendTo("#data")
         $('<tr>').attr("id", "ns_identified").appendTo("#data")
