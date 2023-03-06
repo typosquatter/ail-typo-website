@@ -6,6 +6,7 @@ import argparse
 import configparser
 from uuid import uuid4
 from datetime import datetime
+import logging
 
 from flask import Flask, render_template, url_for, request, jsonify
 
@@ -480,6 +481,7 @@ def create_misp_event(sid):
     org.uuid = "8df15512-0314-4c2a-bd00-9334ab9b59e6"
 
     event = MISPEvent()
+    event.uuid = sid
 
     event.info = f"Typosquatting for: {sess_info['url']}"  # Required
     event.distribution = 0  # Optional, defaults to MISP.default_event_distribution in MISP config
@@ -657,6 +659,8 @@ def set_info(domain, request):
     user_agent = str(request.user_agent)
     now = datetime.now()
     dt_string = now.strftime("%Y/%m/%d %H:%M:%S")
+
+    app.logger.warning(f"[{ip}]: {domain}")
 
     if red_user.exists(ip):
         current_data = json.loads(red_user.get(ip).decode())
