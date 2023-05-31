@@ -382,7 +382,7 @@ $(document).ready(function() {
 })
 
 // List of algo used to generate variations
-algo_list = ["omission", "repetition", "changeOrder", "transposition", "replacement", "doubleReplacement", "addition", "keyboardInsertion", "missingDot", "stripDash", "vowelSwap", "addDash", "bitsquatting", "homoglyph", "commonMisspelling", "homophones", "wrongTld", "addTld", "subdomain", "singularPluralize", "changeDotDash", "addDynamicDns", "numeralSwap", "wrongSld"]
+algo_list = ["omission", "repetition", "changeOrder", "replacement", "doubleReplacement", "addition", "missingDot", "stripDash", "vowelSwap", "addDash", "homoglyph", "commonMisspelling", "homophones", "wrongTld", "addTld", "subdomain", "singularPluralize", "changeDotDash", "addDynamicDns", "numeralSwap", "wrongSld"]
 
 
 // Call when search button is pressed

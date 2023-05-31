@@ -408,7 +408,10 @@ class Session():
         all_keys = data_dict.keys()
         if "runAll" in all_keys:
             self.request_algo = list(algo_list.keys())
-            self.variations_list = ail_typo_squatting.runAll(self.url, math.inf, 'text', "", verbose=False, givevariations=True, keeporiginal=True)
+            for key in self.request_algo:
+                fun = getattr(ail_typo_squatting, key)
+                self.variations_list = fun(self.url, self.variations_list, verbose=False, limit=math.inf, givevariations=True, keeporiginal=True)
+
         else:
             for key in all_keys:
                 if key in list(algo_list.keys()):
