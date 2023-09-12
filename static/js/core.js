@@ -74,6 +74,7 @@ function fetchDomains() {
         $('<tr>').attr("id", "tranco_line").appendTo("#data")
         $('<tr>').attr("id", "majestic_line").appendTo("#data")
         $('<tr>').attr("id", "parking_line").appendTo("#data")
+        $('<tr>').attr("id", "catch_all").appendTo("#data")
         
         cp_collapse = 0
         $.each(data, function(i, item) {
@@ -257,6 +258,10 @@ function fetchDomains() {
                         first_td.append($('<b>').text("Ⓜ️ ").attr({title: "This domain is present in the list of MX you entered"}))
                         $("#mx_identified").after(current_tr)
                     }
+                    else if(item[j]["CatchAll"]){
+                        first_td.append($('<b>').text("🪣 ").attr({title: item[j]["CatchAll"]}))
+                        $("#catch_all").after(current_tr)
+                    }
                     else
                         $("#first_line").before(current_tr)
 
@@ -421,6 +426,9 @@ function actionScan() {
                 }
             }
         }
+        if (document.getElementById("catchAll").checked){
+            data_dict['catchAll'] = $('#catchAll').val()
+        }
 
         // If nothing is checked, run all algorihtms present in the list
         if(!flag){
@@ -481,10 +489,12 @@ function runAll(){
         for( i=0; i< algo_list.length; i++){
             $('#' + algo_list[i]).prop('checked', true);
         }
+        $("#catchAll").prop('checked', true)
     }else{
         for( i=0; i< algo_list.length; i++){
             $('#' + algo_list[i]).prop('checked', false);
         }
+        $("#catchAll").prop('checked', false)
     }
 };
 
@@ -522,7 +532,7 @@ function compare(index, asc) {
     return function(a, b) {
         var valA = getCellValue(a, index), valB = getCellValue(b, index)
         var valColumn0A = getCellValue(a, 0), valColumn0B = getCellValue(b, 0)
-        const icon = ['✅', '🅿️', '📚', '🏦', '🦊', '☑️', 'Ⓜ️', '®️']
+        const icon = ['✅', '🅿️', '📚', '🏦', '🦊', '☑️', 'Ⓜ️', '®️', '🪣']
 
         const col0_valA = icon.some(e1 => valColumn0A.includes(e1))
         const col0_valB = icon.some(e1 => valColumn0B.includes(e1))

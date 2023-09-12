@@ -163,6 +163,7 @@ class Session():
         self.result_stopped = dict()
         self.add_data = False
         self.request_algo = list()
+        self.catch_all = False
 
         self.result_algo = dict()
         for key in list(algo_list.keys()):
@@ -305,9 +306,9 @@ class Session():
                 ## Redis doesn't have this domain in is db
                 if not flag:
                     if app.debug:
-                        data = ail_typo_squatting.dnsResolving([work[1][0]], self.url, "-", verbose=True)
+                        data = ail_typo_squatting.dnsResolving([work[1][0]], self.url, "-", verbose=True, catch_all=self.catch_all)
                     else:
-                        data = ail_typo_squatting.dnsResolving([work[1][0]], self.url, "")
+                        data = ail_typo_squatting.dnsResolving([work[1][0]], self.url, "", catch_all=self.catch_all)
 
                     # Compare original and current variation website
                     website_info = self.get_website_info(work[1][0])
@@ -437,6 +438,7 @@ class Session():
         saveInfo['stopped'] = self.stopped
         saveInfo['md5Url'] = self.md5Url
         saveInfo['request_algo'] = self.request_algo
+        saveInfo['request_date'] = datetime.now().strftime("%Y-%m-%d %H-%M")
 
         red.set(self.id, json.dumps(saveInfo))
         red.expire(self.id, cache_expire_session)
@@ -745,6 +747,9 @@ def typo():
     session = Session(url)
     session.list_ns = list()
     session.list_mx = list()
+
+    if "catchAll" in data_dict:
+        session.catch_all = True
 
     if 'NS' in data_dict:
         if data_dict['NS'].rstrip():
