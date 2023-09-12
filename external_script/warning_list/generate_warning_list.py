@@ -2,9 +2,9 @@ import os
 import requests
 import redis
 import configparser
-import subprocess
 import json
 import ipaddress
+from generator import download_to_file, get_abspath_source_file
 
 pathConf = '../../conf/conf.cfg'
 
@@ -12,9 +12,13 @@ if os.path.isfile(pathConf):
     config = configparser.ConfigParser()
     config.read(pathConf)
 else:
-    print("[-] No conf file found")
-    exit(-1)
-
+    pathConf = 'conf/conf.cfg'
+    if os.path.isfile(pathConf):
+        config = configparser.ConfigParser()
+        config.read(pathConf)
+    else:
+        print("[-] No conf file found")
+        exit(-1)
 if 'redis_warning_list' in config:
     redis_warning_list = redis.Redis(host=config['redis_warning_list']['host'], port=config['redis_warning_list']['port'], db=config['redis_warning_list']['db'])
 else:
@@ -72,5 +76,19 @@ try:
 except:
     print("[-] Error Download moz-top500")
 
+
+
+
+def process(file, numbers):
+    with open(get_abspath_source_file(file), newline='\n', encoding='utf-8', errors='replace') as csv_file:
+        sites = csv_file.readlines()[1:numbers]
+
+    for site in sites:
+        v = site.split(',')[2]
+        redis_warning_list.zadd('majestic_million', {v.rstrip(): 1})
+
 print("[+] Majestic Million")
-subprocess.call(['python3', 'generate_majestic-million.py', '-n', '1000000'])
+majestic_url = 'http://downloads.majestic.com/majestic_million.csv'
+majestic_file = 'majestic_million.csv'
+download_to_file(majestic_url, majestic_file)
+process(majestic_file, 1000000)
