@@ -408,6 +408,7 @@ class Session():
         """Generate variations by options"""
         all_keys = data_dict.keys()
         if "runAll" in all_keys:
+            self.catch_all = True
             self.request_algo = list(algo_list.keys())
             for key in self.request_algo:
                 fun = getattr(ail_typo_squatting, key)
