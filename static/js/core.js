@@ -217,7 +217,7 @@ function fetchDomains() {
                             ressource_diff
                         ),
                         $("<td>").css({"background-color": "#e9ecef", "vertical-align": "middle", "text-align": "center"}).append(
-                            '0 %'
+                            ratio
                         )
                     ))
                 }

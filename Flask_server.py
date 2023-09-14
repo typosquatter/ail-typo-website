@@ -175,8 +175,6 @@ class Session():
         self.website = ""
         self.website_ressource = dict()
 
-        self.get_original_website_info()
-
         self.list_ns = list()
         self.list_mx = list()
 
@@ -202,11 +200,49 @@ class Session():
     def get_original_website_info(self):
         """Get website ressource of request domain"""
 
+        data = ail_typo_squatting.dnsResolving([self.url], self.url, "", catch_all=self.catch_all)
+
         response = get_website(self.url)
         if not response:
             self.website, self.website_ressource = extract_text_ressource("")
         else:
             self.website, self.website_ressource = extract_text_ressource(response.text)
+            if "200" in str(response) or "401" in str(response):
+                soup = BeautifulSoup(response.text, "html.parser")
+                title = soup.find_all('title', limit=1)
+
+                # Website has a title
+                if title:
+                    t = str(title[0])
+                    t = t[7:]
+                    t = t[:-8]
+                    data[self.url]['website_title'] = t
+        
+        data[self.url]['website_sim'] = "100"
+        data[self.url]['ressource_diff'] = "0"
+        data[self.url]['ratio'] = 100
+
+        data_keys = list(data[self.url].keys())
+
+        if 'A' in data_keys:
+            data[self.url]['geoip'] = self.geoIp(data[self.url]['A'][0])
+        elif 'AAAA' in data_keys:
+            data[self.url]['geoip'] = self.geoIp(data[self.url]['AAAA'][0]) 
+
+        if 'MX' in data_keys:
+            # Parse NS record to remove end point
+            for i in range(0, len(data[self.url]['MX'])):
+                data[self.url]['MX'][i] = data[self.url]['MX'][i][:-1]
+
+        if 'NS' in data_keys:
+            # Parse NS record to remove end point
+            for i in range(0, len(data[self.url]['NS'])):
+                data[self.url]['NS'][i] = data[self.url]['NS'][i][:-1]
+
+        data[self.url]['variation'] = "original"
+
+        self.result[0] = data
+        self.result_algo["original"].append(data)
 
 
     def get_website_info(self, variation):
@@ -355,14 +391,14 @@ class Session():
 
                     data = self.check_warning_list(data, work)
 
-                self.result[work[0]] = data         #Store data back at correct index
+                self.result[work[0] + 1] = data         #Store data back at correct index
                 self.result_algo[work[1][1]].append(data)
             except Exception as e:
                 if app.debug:
                     print(e)
                 bad_result = dict()
                 bad_result[work[1][0]] = {"NotExist":True}
-                self.result[work[0]] = bad_result
+                self.result[work[0] + 1] = bad_result
                 self.result_algo[work[1][1]].append(bad_result)
             finally:
                 #signal to the queue that task has been processed
@@ -412,16 +448,18 @@ class Session():
             self.request_algo = list(algo_list.keys())
             for key in self.request_algo:
                 fun = getattr(ail_typo_squatting, key)
-                self.variations_list = fun(self.url, self.variations_list, verbose=False, limit=math.inf, givevariations=True, keeporiginal=True)
+                self.variations_list = fun(self.url, self.variations_list, verbose=False, limit=math.inf, givevariations=True, keeporiginal=False)
 
         else:
             for key in all_keys:
                 if key in list(algo_list.keys()):
                     self.request_algo.append(key)
                     fun = getattr(ail_typo_squatting, key)
-                    self.variations_list = fun(self.url, self.variations_list, verbose=False, limit=math.inf, givevariations=True, keeporiginal=True)
+                    self.variations_list = fun(self.url, self.variations_list, verbose=False, limit=math.inf, givevariations=True, keeporiginal=False)
 
         self.result = [{} for x in self.variations_list]
+        self.result.append({})
+        self.get_original_website_info()
 
     def dl_list(self):
         """list of variations to string"""
