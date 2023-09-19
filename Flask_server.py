@@ -145,7 +145,7 @@ else:
 #########
 
 app = Flask(__name__)
-# app.debug = True
+app.debug = True
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
 
@@ -752,6 +752,11 @@ def valid_ns_mx(dns):
 def index():
     """Home page"""
     return render_template("home_page.html", algo_list=algo_list, len_table=len(list(algo_list.keys())), keys=list(algo_list.keys()), share=0)
+
+@app.route("/v")
+def home_vuejs():
+    """Home page"""
+    return render_template("home_vuejs.html", algo_list=algo_list, len_table=len(list(algo_list.keys())), keys=list(algo_list.keys()), share=0)
 
 @app.route("/info")
 def info_page():
