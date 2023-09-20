@@ -24,7 +24,7 @@ export const first_td = {
         <a id="link" target="_blank" :href="'http://' + current_var['permutation']" title="Go to webpage">
             <i class="fa fa-external-link" aria-hidden="true"></i>
         </a>
-        </br>
+        <br>
         <sup>[[current_var["variation"] ]]</sup>
 	`
 };
@@ -91,8 +91,9 @@ export const ns_td = {
 		}
 	},
 	template: `
-        <div v-if="'NS' in current_var">
+        <template v-if="'NS' in current_var">
             [[ (current_var["NS"] || [''])[0] ]]
+            <br>
             <span id="span_length" v-if="current_var['NS'].length - 1 >= 1">
                 <a data-bs-toggle="collapse" :href="'#collapseNS_' + collapse_id" role="button" aria-expanded="false" :aria-controls="'collapseNS_' + collapse_id">
                     [[ (current_var['NS'].length - 1).toString() ]] more...
@@ -102,11 +103,11 @@ export const ns_td = {
                 <div class="card card-body">
                     <template v-for="i in current_var['NS']">
                         <template v-if="i != current_var['NS'][0]">[[i]]</template>
-                        </br>
+                        <br>
                     </template>
                 </div>
             </div>
-        </div>
+        </template>
 	`
 };
 
@@ -125,6 +126,7 @@ export const mx_td = {
 	template: `
         <div v-if="'MX' in current_var">
             [[ (current_var["MX"] || [''])[0] ]]
+            <br>
             <span id="span_length" v-if="current_var['MX'].length - 1 >= 1">
                 <a data-bs-toggle="collapse" :href="'#collapseMX_' + collapse_id" role="button" aria-expanded="false" :aria-controls="'collapseMX_' + collapse_id">
                     [[ (current_var['MX'].length - 1).toString() ]] more...

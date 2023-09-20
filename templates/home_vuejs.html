@@ -16,7 +16,7 @@
             <div class="progress-bar progress-bar-striped active" id="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" :style="'width:'+progress + '%;'">
             </div>
         </div> 
-        <span v-if="status" id="status">[[status]]</span>
+        <span v-if="status_site" id="status">[[status_site]]</span>
     </div>
     <br/>
     <div>
@@ -31,7 +31,7 @@
                 <li><a class="dropdown-item" :href="`/download/${sid}/misp-json`">MISP JSON</a></li>
             </ul>
         </div>
-        <button v-if="is_stop" type="button" class="btn btn-primary" :title="'https://typosquatting-finder.circl.lu/'+sid" style="float: right;" onclick="share_button()">Share</button>
+        <button v-if="is_stop" type="button" class="btn btn-primary" :title="'https://typosquatting-finder.circl.lu/'+sid" style="float: right;" @click="share_button">Share</button>
         <p>
             <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseOption" role="button" aria-expanded="false" aria-controls="collapseOption">
                 Advanced
@@ -44,7 +44,7 @@
             <table>
                 <tr>
                     <td>
-                        <input type="checkbox" id="runAll" onclick="runAll()" value="runAll">
+                        <input type="checkbox" id="runAll" @click="runAll()" value="runAll">
                         <label for="runAll" title="Used to run all algorithms that can be run">Run all algorithm</label>
                     </td>
                     <td>
@@ -130,143 +130,143 @@
 
     <table id="data" v-if="is_searching || is_stop">
         <tr>
-            <th :click="sort_col(this)">PERMUTATION</th>
-            <th :click="sort_col(this)">IP ADDRESS</th>
-            <th :click="sort_col(this)">NAME SERVER</th>
-            <th :click="sort_col(this)">MAIL SERVER</th>
-            <th :click="sort_col(this)">WEB TITLE</th>
-            <th :click="sort_col(this)">WEB SIMILARITY</th>
-            <th :click="sort_col(this)">RESSOURCE DIFF</th>
-            <th :click="sort_col(this)">SIMILARITY PROB <span></span> <i class="fa fa-question" title="This is the result of the relation between \n'web similarity' and 'ressource diff'"></i> </th>
+            <th id="permutation_sort" @click="sort_col('permutation_sort')">PERMUTATION</th>
+            <th id="ip_sort" @click="sort_col('ip_sort')">IP ADDRESS</th>
+            <th id="ns_sort" @click="sort_col('ns_sort')">NAME SERVER</th>
+            <th id="mx_sort" @click="sort_col('mx_sort')">MAIL SERVER</th>
+            <th id="title_sort" @click="sort_col('title_sort')">WEB TITLE</th>
+            <th id="sim_sort" @click="sort_col('sim_sort')">WEB SIMILARITY</th>
+            <th id="ressource_sort" @click="sort_col('ressource_sort')">RESSOURCE DIFF</th>
+            <th id="prob_sort" @click="sort_col('prob_sort')">SIMILARITY PROB <span></span> <i class="fa fa-question" title="This is the result of the relation between \n'web similarity' and 'ressource diff'"></i> </th>
         </tr>
         <tr style="background-color: #e9ecef;" v-if="original_domain">
             <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="original_domain" icon="" title=""></first_td></td>
-            <td style="vertical-align: middle; padding-left: 5px;"><ip_td :current_var="original_domain"></ip_td></td>
-            <td style="vertical-align: middle; padding-left: 5px;"><ns_td :current_var="original_domain"></ns_td></td>
-            <td style="vertical-align: middle; padding-left: 5px;"><mx_td :current_var="original_domain"></mx_td></td>
-            <td style="vertical-align: middle; padding-left: 5px;"><website_title :current_var="original_domain"></website_title></td>
-            <td style="vertical-align: middle; padding-left: 5px;"><website_sim :current_var="original_domain"></website_sim></td>
-            <td style="vertical-align: middle; padding-left: 5px;"><ressource_diff :current_var="original_domain"></ressource_diff></td>
-            <td style="vertical-align: middle; padding-left: 5px;"><ratio :current_var="original_domain"></ratio></td>
+            <td style="vertical-align: middle;"><ip_td :current_var="original_domain"></ip_td></td>
+            <td style="vertical-align: middle;"><ns_td :current_var="original_domain"></ns_td></td>
+            <td style="vertical-align: middle;"><mx_td :current_var="original_domain"></mx_td></td>
+            <td style="vertical-align: middle;"><website_title :current_var="original_domain"></website_title></td>
+            <td style="vertical-align: middle;"><website_sim :current_var="original_domain"></website_sim></td>
+            <td style="vertical-align: middle;"><ressource_diff :current_var="original_domain"></ressource_diff></td>
+            <td style="vertical-align: middle;"><ratio :current_var="original_domain"></ratio></td>
         </tr>
         <template v-if="other_domains">
             <tr v-for="loc_domains in other_domains">
                 <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="" title=""></first_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ratio :current_var="loc_domains"></ratio></td>
+                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
+                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
+                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
+                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
+                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
+                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
+                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
             </tr>
         </template>
         <template v-if="bank_list">
             <tr v-for="loc_domains in bank_list">
                 <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="🏦 " title="This domain is present in the list of known banking website"></first_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ratio :current_var="loc_domains"></ratio></td>
+                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
+                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
+                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
+                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
+                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
+                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
+                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
             </tr>
         </template>
         <template v-if="university_list">
             <tr v-for="loc_domains in university_list">
                 <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="📚 " title="This domain is present in the list of university domains"></first_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ratio :current_var="loc_domains"></ratio></td>
+                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
+                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
+                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
+                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
+                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
+                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
+                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
             </tr>
         </template>
         <template v-if="majestic_list">
             <tr v-for="loc_domains in majestic_list">
                 <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="✅ " title="This domain is present in the top 100000 of the most visited websites"></first_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ratio :current_var="loc_domains"></ratio></td>
+                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
+                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
+                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
+                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
+                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
+                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
+                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
             </tr>
         </template>
         <template v-if="tranco_list">
             <tr v-for="loc_domains in tranco_list">
                 <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="☑️ " title="This domain is present in the top 100000 of Tranco list"></first_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ratio :current_var="loc_domains"></ratio></td>
+                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
+                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
+                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
+                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
+                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
+                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
+                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
             </tr>
         </template>
         <template v-if="moz_list">
             <tr v-for="loc_domains in moz_list">
                 <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="🦊 " title="This domain is present in the top 500 of moz list"></first_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ratio :current_var="loc_domains"></ratio></td>
+                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
+                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
+                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
+                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
+                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
+                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
+                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
             </tr>
         </template>
         <template v-if="parking_list">
             <tr v-for="loc_domains in parking_list">
                 <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="🅿️ " title="This domain is present in the list of parking domain"></first_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ratio :current_var="loc_domains"></ratio></td>
+                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
+                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
+                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
+                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
+                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
+                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
+                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
             </tr>
         </template>
         <template v-if="ns_list">
             <tr v-for="loc_domains in ns_list">
                 <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="®️ " title="This domain is present in the list of NS you entered"></first_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ratio :current_var="loc_domains"></ratio></td>
+                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
+                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
+                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
+                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
+                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
+                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
+                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
             </tr>
         </template>
         <template v-if="mx_list">
             <tr v-for="loc_domains in mx_list">
                 <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="Ⓜ️ " title="This domain is present in the list of MX you entered"></first_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ratio :current_var="loc_domains"></ratio></td>
+                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
+                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
+                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
+                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
+                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
+                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
+                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
             </tr>
         </template>
         <template v-if="catchall_list">
             <tr v-for="loc_domains in catchall_list">
                 <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="🪣 " :title="loc_domains['CatchAll']"></first_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle; padding-left: 5px;"><ratio :current_var="loc_domains"></ratio></td>
+                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
+                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
+                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
+                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
+                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
+                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
+                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
             </tr>
         </template>
     </table>
@@ -285,7 +285,7 @@
             setup() {
                 const current_url = ref("")
                 const progress = ref(0)
-                const status = ref("")
+                const status_site = ref("")
                 const is_searching = ref(false)
                 const is_stop = ref(false)
                 const scan = ref("Search")
@@ -316,19 +316,68 @@
                     }
                 })
 
+                $('#url').on('keypress',function(e) {
+                    if(e.which == 13) {
+                        actionScan();
+                    }
+                });
+
+                // Check all algorithms' box when runAll box is checked
+                function runAll(){
+                    if (document.getElementById("runAll").checked){
+                        for( let i=0; i< algo_list.length; i++){
+                            $('#' + algo_list[i]).prop('checked', true);
+                        }
+                        $("#catchAll").prop('checked', true)
+                    }else{
+                        for( let i=0; i< algo_list.length; i++){
+                            $('#' + algo_list[i]).prop('checked', false);
+                        }
+                        $("#catchAll").prop('checked', false)
+                    }
+                };
+
+                // Copy link to share search into clipboard
+                function share_button(){
+                    navigator.clipboard.writeText("https://typosquatting-finder.circl.lu/" + sid.value);
+                    $("#alert-clip").fadeTo(2000, 500).slideUp(500, function() {
+                        $("#alert-clip").slideUp(500);
+                    })
+                }
+
+                function checkShare(){
+                    $.get({
+                        url: '/share/' + $("#share").val(),
+                        contentType: 'application/json',
+                        success: function(data) {
+                            sid.value = $("#share").val()
+                            $('#url').val(data)
+                            current_url.value = data
+                            scan.value = 'Stop'
+                            pollScan();
+                            // status.value = ""
+                        },
+                        error: function(xhr, status, error) {
+                            scan.value = 'Search'
+                            status_site.value = xhr.responseJSON['message'] || 'Something went wrong'
+                        },
+                    });
+
+                }
+
                 
                 function actionScan() {
                     // No domain enter
                     current_url.value = $('#url').val()
                     if (!current_url.value) {
-                        status.value = '↖ You need to type in a domain name first'
+                        status_site.value = '↖ You need to type in a domain name first'
                         return
                     }
 
                     if (scan.value == 'Search') {
                         last_registered = 0;
                         scan.value = '⏱'
-                        status.value = ""
+                        status_site.value = ""
                         progress.value = 0
                         is_stop.value = false
                         domains.value = {}
@@ -377,18 +426,12 @@
                                 pollScan();
                             },
                             error: function(xhr, status, error) {
-                                scan.value = 'Search'
-                                // let rep = xhr.responseJSON['message']
-                                // status.value = ""
-                                // console.log(typeof rep);
-                                // console.log(typeof status.value);
-                                // if(rep){
-                                //     status.value = rep
-                                // }else{
-                                //     status.value = 'Something went wrong'
-                                // }
-                                
-                                // status.value = xhr.responseJSON['message'] || 'Something went wrong'
+                                scan.value = 'Search'                                
+                                status_site.value = xhr.responseJSON['message'] || 'Something went wrong'
+
+                                if(status_site.value.includes("]")){
+                                    status_site.value = status_site.value.split("]")[1]
+                                }
                             },
                         });
                     // Stop button is pressed
@@ -409,16 +452,16 @@
                     // Loop function to update the list of identified domains
                     $.getJSON('/status/' + sid.value, function(data) {
                         progress.value = Math.round((data['complete']/data['total'])*100)
-                        status.value = 'Processed ' + data['complete'] + ' of ' + data['total']
+                        status_site.value = 'Processed ' + data['complete'] + ' of ' + data['total']
                         if (data['remaining'] > 0) {
                             setTimeout(pollScan, 3000);
                         } else {
                             // Button Stop pressed
                             if (data['stopped'])
-                                status.value = 'Stopped ! Identified ' + data['registered'] + ' registered.'
+                                status_site.value = 'Stopped ! Identified ' + data['registered'] + ' registered.'
                             // Display result of the search
                             else
-                                status.value = 'Found ' + data['complete'] + ' domains. Identified ' + data['registered'] + ' registered.'
+                                status_site.value = 'Found ' + data['complete'] + ' domains. Identified ' + data['registered'] + ' registered.'
                             scan.value = 'Search'
                             is_stop.value = true
                         }
@@ -480,6 +523,15 @@
 
                 }
 
+                function sort_col(ele){
+                    ele = $("#"+ele)[0]
+                    var table = $(ele).parents('table').eq(0)
+                    var rows = table.find('tr:gt(0)').toArray().sort(compare($(ele).index(), !ele.asc))
+                    ele.asc = !ele.asc
+                    if (!ele.asc){rows = rows.reverse()}
+                    for (var i = 0; i < rows.length; i++){table.append(rows[i])} 
+                }
+
                 function compare(index, asc) {
                     return function(a, b) {
                         var valA = getCellValue(a, index), valB = getCellValue(b, index)
@@ -488,6 +540,13 @@
 
                         const col0_valA = icon.some(e1 => valColumn0A.includes(e1))
                         const col0_valB = icon.some(e1 => valColumn0B.includes(e1))
+
+                        if(valA[0] == " "){
+                            valA = valA.substring(1)
+                        }
+                        if(valB[0] == " "){
+                            valB = valB.substring(1)
+                        }
                         
                         if(index == 1){
                             if (!valA.trim() || col0_valA) {
@@ -565,18 +624,10 @@
                 }
                 function getCellValue(row, index){ return $(row).children('td').eq(index).text() }
                 
-                
-                function sort_col(ele){
-                    var table = $(ele).parents('table').eq(0)
-                    var rows = table.find('tr:gt(0)').toArray().sort(compare($(ele).index(), !ele.asc))
-                    ele.asc = !ele.asc
-                    if (!ele.asc){rows = rows.reverse()}
-                    for (var i = 0; i < rows.length; i++){table.append(rows[i])} 
-                }
 
 
                 return {
-                    status,
+                    status_site,
                     progress,
                     is_searching,
                     is_stop,
@@ -599,7 +650,9 @@
 
                     actionScan,
                     compare,
-                    sort_col
+                    sort_col,
+                    runAll,
+                    share_button
                 }
             }
         }).mount('#container')

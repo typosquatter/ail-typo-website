@@ -113,7 +113,7 @@ span#status {
     float: right;
     font-size: 80%;
 }
-a {
+td a {
     color: inherit;
     text-decoration: underline;
     text-decoration-skip: ink;
