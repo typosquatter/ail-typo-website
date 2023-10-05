@@ -177,6 +177,7 @@ class Session():
 
         self.list_ns = list()
         self.list_mx = list()
+        self.list_domains_exclude = list()
 
 
     def scan(self):
@@ -390,6 +391,10 @@ class Session():
                     self.add_data = True
 
                     data = self.check_warning_list(data, work)
+
+                    if self.list_domains_exclude:
+                        if work[1][0] in self.list_domains_exclude:
+                            data[work[1][0]]['exclude_domain'] = True
 
                 self.result[work[0] + 1] = data         #Store data back at correct index
                 self.result_algo[work[1][1]].append(data)
@@ -767,8 +772,8 @@ def about_page():
 @app.route("/typo", methods=['POST'])
 def typo():
     """Run the scan"""
-    data_dict = request.json["data_dict"]
-    url = data_dict["url"]
+    data_dict = dict(request.form)
+    url = data_dict["url"]    
 
     domain_extract = tldextract.extract(url)
 
@@ -784,8 +789,9 @@ def typo():
     md5Url = hashlib.md5(url.encode()).hexdigest()
 
     session = Session(url)
-    session.list_ns = list()
-    session.list_mx = list()
+
+    if "file_1" in request.files:
+        session.list_domains_exclude = request.files["file_1"].read().decode().splitlines()
 
     if "catchAll" in data_dict:
         session.catch_all = True
