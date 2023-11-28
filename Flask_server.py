@@ -780,9 +780,13 @@ def typo():
     res = ail_typo_squatting.check_valid_domain(domain_extract)
     if res:
         return jsonify({'message': res}), 400
-        
+    
     if domain_extract.suffix:
-        url = '.'.join(part for part in domain_extract if part)
+        if domain_extract.subdomain:
+            url = f"{domain_extract.subdomain}."
+        else:
+            url = ""
+        url += f"{domain_extract.domain}.{domain_extract.suffix}"
 
     set_info(url, request)
 
