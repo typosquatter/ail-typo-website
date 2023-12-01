@@ -452,8 +452,9 @@ class Session():
             self.catch_all = True
             self.request_algo = list(algo_list.keys())
             for key in self.request_algo:
-                fun = getattr(ail_typo_squatting, key)
-                self.variations_list = fun(self.url, self.variations_list, verbose=False, limit=math.inf, givevariations=True, keeporiginal=False)
+                if not key == "addDynamicDns":
+                    fun = getattr(ail_typo_squatting, key)
+                    self.variations_list = fun(self.url, self.variations_list, verbose=False, limit=math.inf, givevariations=True, keeporiginal=False)
 
         else:
             for key in all_keys:
