@@ -93,7 +93,7 @@ else:
 if 'cache_session' in config:
     cache_expire_session = config['cache_session']['expire']
 else:
-    cache_expire_session = 3600
+    cache_expire_session = 86400
 
 
 sessions = list()
@@ -164,6 +164,7 @@ class Session():
         self.add_data = False
         self.request_algo = list()
         self.catch_all = False
+        self.use_cache = True
 
         self.result_algo = dict()
         for key in list(algo_list.keys()):
@@ -332,7 +333,7 @@ class Session():
             try:
                 flag = False
                 ## If redis have some domains cached, don't resolve it again
-                if self.result_stopped and not args.nocache:
+                if self.result_stopped and not args.nocache and self.use_cache:
                     if work[1][1] in list(self.result_stopped.keys()):
                         for domain in self.result_stopped[work[1][1]]:
                             if list(domain.keys())[0] == work[1][0]:
@@ -808,6 +809,9 @@ def typo():
     if 'MX' in data_dict:
         if data_dict['MX'].rstrip():
             session.list_mx = valid_ns_mx(data_dict['MX'])
+        
+    if 'use_cache' in data_dict:
+        session.use_cache = False
 
     if red.exists(md5Url):
         session.result_stopped = get_algo_from_redis(data_dict, md5Url)

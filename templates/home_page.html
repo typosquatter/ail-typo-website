@@ -39,21 +39,21 @@
         </p>
     </div>
     <div class="alert alert-light" id="alert-clip" role="alert">Copied !</div>
-    <div class="collapse " id="collapseOption">
+    <div class="collapse mb-5" id="collapseOption">
         <div class="card card-body">
             <table>
                 <tr>
                     <td>
                         <input type="checkbox" id="runAll" @click="runAll()" value="runAll">
-                        <label for="runAll" title="Used to run all algorithms that can be run">Run all algorithm</label>
+                        <label class="mx-1" for="runAll" title="Used to run all algorithms that can be run">Run all algorithm</label>
                     </td>
                     <td>
                         <input type="checkbox" id={{keys[0]}} value={{keys[0]}}>
-                        <label for={{keys[0]}} title="{{algo_list[keys[0]][1]}}">{{ algo_list[keys[0]][0] }}</label>
+                        <label class="mx-1" for={{keys[0]}} title="{{algo_list[keys[0]][1]}}">{{ algo_list[keys[0]][0] }}</label>
                     </td>
                     <td>
                         <input type="checkbox" id={{keys[1]}} value={{keys[1]}}>
-                        <label for={{keys[1]}} title="{{algo_list[keys[1]][1]}}">{{ algo_list[keys[1]][0] }}</label>
+                        <label class="mx-1" for={{keys[1]}} title="{{algo_list[keys[1]][1]}}">{{ algo_list[keys[1]][0] }}</label>
                     </td>
                 </tr>
                 {% for i in range(2, len_table, 2)%}
@@ -61,13 +61,13 @@
                     <td></td>
                     <td>
                         <input type="checkbox" id={{keys[i]}} value={{keys[i]}}>
-                        <label for={{keys[i]}} title="{{algo_list[keys[i]][1]}}">{{algo_list[keys[i]][0]}}</label>
+                        <label class="mx-1" for={{keys[i]}} title="{{algo_list[keys[i]][1]}}">{{algo_list[keys[i]][0]}}</label>
                     </td>
 
                     {% if i + 1 < len_table %}
                         <td>
                             <input type="checkbox" id={{keys[i+1]}} value={{keys[i+1]}}>
-                            <label for={{keys[i+1]}} title="{{algo_list[keys[i+1]][1]}}">{{algo_list[keys[i+1]][0]}}</label>
+                            <label class="mx-1" for={{keys[i+1]}} title="{{algo_list[keys[i+1]][1]}}">{{algo_list[keys[i+1]][0]}}</label>
                         </td>
                     {% else %}
                         <td></td>
@@ -77,7 +77,13 @@
                 <tr>
                     <td>
                         <input type="checkbox" id="catchAll" value="catchAll">
-                        <label for="catchAll" title="Catch all">Catch All</label>
+                        <label class="mx-1" for="catchAll" title="Catch all">Catch All</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="checkbox" id="use_cache" checked value="use_cache">
+                        <label class="mx-1" for="use_cache" title="Use the cache for the request">Use Cache</label>
                     </td>
                 </tr>
                 <tr>
@@ -174,7 +180,7 @@
         </template>
         <template v-if="exclude_list">
             <tr v-for="loc_domains in exclude_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="©️ " title="This domain is present in the list of domain to exclude"></first_td></td>
+                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="©️" title="This domain is present in the list of domain to exclude"></first_td></td>
                 <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
                 <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
                 <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
@@ -186,7 +192,7 @@
         </template>
         <template v-if="bank_list">
             <tr v-for="loc_domains in bank_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="🏦 " title="This domain is present in the list of known banking website"></first_td></td>
+                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="🏦" title="This domain is present in the list of known banking website"></first_td></td>
                 <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
                 <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
                 <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
@@ -198,7 +204,7 @@
         </template>
         <template v-if="university_list">
             <tr v-for="loc_domains in university_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="📚 " title="This domain is present in the list of university domains"></first_td></td>
+                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="📚" title="This domain is present in the list of university domains"></first_td></td>
                 <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
                 <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
                 <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
@@ -210,7 +216,7 @@
         </template>
         <template v-if="majestic_list">
             <tr v-for="loc_domains in majestic_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="✅ " title="This domain is present in the top 100000 of the most visited websites"></first_td></td>
+                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="✅" title="This domain is present in the top 100000 of the most visited websites"></first_td></td>
                 <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
                 <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
                 <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
@@ -222,7 +228,7 @@
         </template>
         <template v-if="tranco_list">
             <tr v-for="loc_domains in tranco_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="☑️ " title="This domain is present in the top 100000 of Tranco list"></first_td></td>
+                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="☑️" title="This domain is present in the top 100000 of Tranco list"></first_td></td>
                 <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
                 <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
                 <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
@@ -234,7 +240,7 @@
         </template>
         <template v-if="moz_list">
             <tr v-for="loc_domains in moz_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="🦊 " title="This domain is present in the top 500 of moz list"></first_td></td>
+                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="🦊" title="This domain is present in the top 500 of moz list"></first_td></td>
                 <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
                 <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
                 <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
@@ -246,7 +252,7 @@
         </template>
         <template v-if="parking_list">
             <tr v-for="loc_domains in parking_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="🅿️ " title="This domain is present in the list of parking domain"></first_td></td>
+                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="🅿️" title="This domain is present in the list of parking domain"></first_td></td>
                 <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
                 <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
                 <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
@@ -258,7 +264,7 @@
         </template>
         <template v-if="ns_list">
             <tr v-for="loc_domains in ns_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="®️ " title="This domain is present in the list of NS you entered"></first_td></td>
+                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="®️" title="This domain is present in the list of NS you entered"></first_td></td>
                 <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
                 <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
                 <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
@@ -270,7 +276,7 @@
         </template>
         <template v-if="mx_list">
             <tr v-for="loc_domains in mx_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="Ⓜ️ " title="This domain is present in the list of MX you entered"></first_td></td>
+                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="Ⓜ️" title="This domain is present in the list of MX you entered"></first_td></td>
                 <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
                 <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
                 <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
@@ -282,7 +288,7 @@
         </template>
         <template v-if="catchall_list">
             <tr v-for="loc_domains in catchall_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="🪣 " :title="loc_domains['CatchAll']"></first_td></td>
+                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="🪣" :title="loc_domains['CatchAll']"></first_td></td>
                 <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
                 <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
                 <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
@@ -437,6 +443,10 @@
 
                         var files = document.getElementById('importer').files
                         formData.append("file_1", files[0]);
+
+                        // use cache or not
+                        if(!document.getElementById("use_cache").checked)
+                            formData.append('use_cache', "use_cache")
                         
                         // Send request info to server to execute the search
                         const res = await fetch(
@@ -681,7 +691,6 @@
                     original_domain,
 
                     actionScan,
-                    compare,
                     sort_col,
                     runAll,
                     share_button
