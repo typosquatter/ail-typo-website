@@ -87,8 +87,17 @@ def process(file, numbers):
         v = site.split(',')[2]
         redis_warning_list.zadd('majestic_million', {v.rstrip(): 1})
 
-print("[+] Majestic Million")
+print("[+] Majestic Million\n")
 majestic_url = 'http://downloads.majestic.com/majestic_million.csv'
 majestic_file = 'majestic_million.csv'
 download_to_file(majestic_url, majestic_file)
 process(majestic_file, 1000000)
+
+
+print("[+] Google Crux 1M\n")
+try:
+    r = requests.get("https://raw.githubusercontent.com/MISP/misp-warninglists/main/lists/google-chrome-crux-1million/list.json")
+    for google_crux in r.json()['list']:
+        redis_warning_list.zadd("google_crux", {google_crux: 1})
+except:
+    print("[-] Error Download Google Crux 1M")

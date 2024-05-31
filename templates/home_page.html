@@ -250,6 +250,18 @@
                 <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
             </tr>
         </template>
+        <template v-if="google_crux">
+            <tr v-for="loc_domains in google_crux">
+                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="🥽" title="This domain is present in the top 1 Million of google crux list"></first_td></td>
+                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
+                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
+                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
+                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
+                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
+                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
+                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
+            </tr>
+        </template>
         <template v-if="parking_list">
             <tr v-for="loc_domains in parking_list">
                 <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="🅿️" title="This domain is present in the list of parking domain"></first_td></td>
@@ -327,6 +339,7 @@
                 const majestic_list = ref([])
                 const tranco_list = ref([])
                 const moz_list = ref([])
+                const google_crux = ref([])
                 const parking_list = ref([])
                 const mx_list = ref([])
                 const ns_list = ref([])
@@ -526,6 +539,7 @@
                     ns_list.value = []
                     catchall_list.value = []
                     exclude_list.value = []
+                    google_crux.value = []
                     other_domains.value = []
 
                     for(let i in domains.value){
@@ -556,6 +570,8 @@
                                     mx_list.value.push(loc)
                                 else if(domains.value[i][loc_url]["CatchAll"])
                                     catchall_list.value.push(loc)
+                                else if(domains.value[i][loc_url]["google_crux"])
+                                    google_crux.value.push(loc)
                                 else
                                     other_domains.value.push(loc)
                             }
@@ -577,7 +593,7 @@
                     return function(a, b) {
                         var valA = getCellValue(a, index), valB = getCellValue(b, index)
                         var valColumn0A = getCellValue(a, 0), valColumn0B = getCellValue(b, 0)
-                        const icon = ['✅', '🅿️', '📚', '🏦', '🦊', '☑️', 'Ⓜ️', '®️', '🪣', '©️']
+                        const icon = ['✅', '🅿️', '📚', '🏦', '🦊', '☑️', 'Ⓜ️', '®️', '🪣', '©️', '🥽']
 
                         const col0_valA = icon.some(e1 => valColumn0A.includes(e1))
                         const col0_valB = icon.some(e1 => valColumn0B.includes(e1))
@@ -685,6 +701,7 @@
                     parking_list,
                     mx_list,
                     ns_list,
+                    google_crux,
                     catchall_list,
                     exclude_list,
                     other_domains,

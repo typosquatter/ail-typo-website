@@ -37,6 +37,10 @@ if redis_warning_list.exists('moz-top500'):
 else:
     moz_top500 = False
 
+if redis_warning_list.exists('google_crux'):
+    google_crux = True
+else:
+    google_crux = False
 
 
 
@@ -75,5 +79,8 @@ def check_warning_list(data, work):
     if moz_top500:
         if redis_warning_list.zrank('moz-top500', work[1][0]) != None:
             data[work[1][0]]['moz-top500'] = True
+    if google_crux:
+        if redis_warning_list.zrank('google_crux', work[1][0]) != None:
+            data[work[1][0]]['google_crux'] = True
 
     return data
