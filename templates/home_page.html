@@ -152,9 +152,19 @@
             <th id="ns_sort" @click="sort_col('ns_sort')">NAME SERVER</th>
             <th id="mx_sort" @click="sort_col('mx_sort')">MAIL SERVER</th>
             <th id="title_sort" @click="sort_col('title_sort')">WEB TITLE</th>
-            <th id="sim_sort" @click="sort_col('sim_sort')">WEB SIMILARITY</th>
+            <th v-if="is_sk_similarity_enable" id="sim_sort" @click="sort_col('sim_sort')">WEB SIMILARITY</th>
+            <th v-else id="sim_sort" style="color:grey" title="This value is disabled. Install typosquatting-finder locally to enable it.">
+                <i>WEB SIMILARITY</i>
+            </th>
             <th id="ressource_sort" @click="sort_col('ressource_sort')">RESSOURCE DIFF</th>
-            <th id="prob_sort" @click="sort_col('prob_sort')">SIMILARITY PROB <span></span> <i class="fa fa-question" title="This is the result of the relation between \n'web similarity' and 'ressource diff'"></i> </th>
+            <th v-if="is_sk_similarity_enable" id="prob_sort" @click="sort_col('prob_sort')">
+                SIMILARITY PROB <span></span> 
+                <i class="fa fa-question" title="This is the result of the relation between \n'web similarity' and 'ressource diff'"></i> 
+            </th>
+            <th v-else id="prob_sort" style="color:grey" title="This value is disabled. Install typosquatting-finder locally to enable it.">
+                <i>SIMILARITY PROB</i> <span></span> 
+                <i class="fa fa-question" title="This is the result of the relation between \n'web similarity' and 'ressource diff'"></i> 
+            </th>
         </tr>
         <tr style="background-color: #e9ecef;" v-if="original_domain">
             <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="original_domain" icon="" title="" :original="true"></first_td></td>
@@ -333,6 +343,8 @@
                 const sid = ref(null)
                 const domains = ref(null)
                 let last_registered = 0
+
+                const is_sk_similarity_enable = ref(true)
 
                 const bank_list = ref([])
                 const university_list = ref([])
@@ -682,6 +694,12 @@
                 function getCellValue(row, index){ return $(row).children('td').eq(index).text() }
                 
 
+                async function fetch_status_sk_similarity() {
+                    const res = await fetch("/sk_status")
+                    let loc = await res.json()
+                    is_sk_similarity_enable.value = loc["sk_similarity"]
+                }
+                fetch_status_sk_similarity()
 
                 return {
                     status_site,
@@ -692,6 +710,8 @@
                     sid,
                     domains,
                     current_url,
+
+                    is_sk_similarity_enable,
 
                     bank_list,
                     university_list,

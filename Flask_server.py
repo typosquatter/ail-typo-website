@@ -18,7 +18,7 @@ from app.misp import *
 # Arg Parse #
 #############
 
-arg_parse()
+args = arg_parse()
 
 ##########
 ## CONF ##
@@ -27,9 +27,21 @@ arg_parse()
 if 'Flask_server' in config:
     FLASK_PORT = int(config['Flask_server']['port'])
     FLASK_URL = config['Flask_server']['ip']
+    if 'debug' not in config['Flask_server']:
+        DEBUG = False
+    else:
+        DEBUG = config.getboolean('Flask_server', 'debug')
+    
+    if 'sk_similarity' not in config['Flask_server']:
+        sk_similarity_bool = False
+    else:
+        sk_similarity_bool = config.getboolean('Flask_server', 'sk_similarity')
+    
 else:
     FLASK_URL = '127.0.0.1'
     FLASK_PORT = 7005
+    DEBUG = False
+    sk_similarity_bool = False
 
 
 #########
@@ -37,13 +49,21 @@ else:
 #########
 
 app = Flask(__name__)
-app.debug = True
+app.debug = DEBUG
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
 
 ###############
 # FLASK ROUTE #
 ###############
+
+@app.route("/sk_status")
+def sk_status():
+    """Status of sk_similarity"""
+    return jsonify({'sk_similarity': sk_similarity_bool}), 200
+
+
+
 
 @app.route("/")
 def index():
@@ -65,7 +85,9 @@ def about_page():
 def typo():
     """Run the scan"""
     data_dict = dict(request.form)
-    url = data_dict["url"]    
+    url = data_dict["url"]
+    if args.nocache:
+        data_dict["use_cache"] = False
 
     domain_extract = tldextract.extract(url)
 

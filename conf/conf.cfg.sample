@@ -1,6 +1,8 @@
 [Flask_server]
 ip = 127.0.0.1
 port = 7005
+sk_similarity = False
+debug = False
 
 [Flask_api]
 ip = 127.0.0.1

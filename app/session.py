@@ -17,7 +17,7 @@ import ail_typo_squatting
 
 from similarius import get_website, extract_text_ressource, sk_similarity, ressource_difference, ratio
 
-from .utils import config, args, algo_list, sessions, red, cache_expire_session, valid_ns_mx
+from .utils import config, algo_list, sessions, red, cache_expire_session, valid_ns_mx
 from .warning_list import check_warning_list
 
 
@@ -27,17 +27,18 @@ else:
     num_threads = 10
 
 
-if not type(args)==str:
-    if not args.nocache:
-        if 'cache' in config:
-            cache_expire = config['cache']['expire']
-        else:
-            cache_expire = 86400
-    else:
-        cache_expire = 0
+if 'cache' in config:
+    cache_expire = config['cache']['expire']
 else:
     cache_expire = 86400
 
+if "Flask_server" in config:
+    if 'sk_similarity' not in config['Flask_server']:
+        sk_similarity_bool = False
+    else:
+        sk_similarity_bool = config.getboolean('Flask_server', 'sk_similarity')
+else:
+    sk_similarity_bool = False
 
 
 #################
@@ -186,8 +187,9 @@ class Session():
                 text, ressource_dict = extract_text_ressource(response.text)
 
                 if text and self.website:
-                    sim = str(sk_similarity(self.website, text))
-                    website_info['sim'] = sim
+                    if sk_similarity_bool:
+                        sim = str(sk_similarity(self.website, text))
+                        website_info['sim'] = sim
                     
                     # Ressources difference between original's website and varation one
                     ressource_diff = ressource_difference(self.website_ressource, ressource_dict)
@@ -195,7 +197,8 @@ class Session():
                     website_info['ressource_diff'] = ressource_diff
                     
                     # Ratio to calculate the similarity probability
-                    website_info['ratio'] = ratio(ressource_diff, sim)
+                    if sk_similarity_bool:
+                        website_info['ratio'] = ratio(ressource_diff, sim)
 
         return website_info
 
