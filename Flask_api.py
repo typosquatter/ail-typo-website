@@ -67,10 +67,18 @@ def prepareArg(data):
 @api.doc(description='Request instance to get domain result and current status of the queue', params={'sid': 'id of the scan'})
 class Domains(Resource):
     def get(self, sid):
-        domain = requests.get(f'{url_to_server}/domains/{sid}').json()
-        status = requests.get(f'{url_to_server}/status/{sid}').json()
-        
-        if not type(domain) == dict:
+        try:
+            domain_resp = requests.get(f'{url_to_server}/domains/{sid}', timeout=10)
+            domain_resp.raise_for_status()
+            domain = domain_resp.json()
+
+            status_resp = requests.get(f'{url_to_server}/status/{sid}', timeout=10)
+            status_resp.raise_for_status()
+            status = status_resp.json()
+        except requests.RequestException as exc:
+            return jsonify({'error': 'Upstream request failed', 'detail': str(exc)}), 502
+
+        if not isinstance(domain, dict):
             domain.append(status)
 
         return jsonify(domain)
@@ -83,20 +91,29 @@ class ScanUrl(Resource):
             data = dict(request.args)
             s = prepareArg(data)
 
-            r = requests.get(f'{url_to_server}/api/{url}{s}')
+            try:
+                r = requests.get(f'{url_to_server}/api/{url}{s}', timeout=10)
+            except requests.RequestException as exc:
+                return jsonify({'error': 'Upstream request failed', 'detail': str(exc)}), 502
 
             if r.status_code == 200:
                 sid = r.json()['sid']
                 return sid
-            
-            return r.text
+
+            return r.text, r.status_code
         return 'Domain not valid'
 
 @api.route('/stop/<sid>')
 @api.doc(description='Stop the current request', params={'sid': 'id of the scan'})
 class Stop(Resource):
     def get(self, sid):
-        stop = requests.get(f'{url_to_server}/stop/{sid}').json()
+        try:
+            stop_resp = requests.get(f'{url_to_server}/stop/{sid}', timeout=10)
+            stop_resp.raise_for_status()
+            stop = stop_resp.json()
+        except requests.RequestException as exc:
+            return jsonify({'error': 'Upstream request failed', 'detail': str(exc)}), 502
+
         return jsonify(stop)
 
 

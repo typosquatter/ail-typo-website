@@ -1,6 +1,10 @@
 [Flask_server]
 ip = 127.0.0.1
 port = 7005
+sk_similarity = True
+debug = False
+session_max = 200
+session_sweep_interval = 30
 
 [Flask_api]
 ip = 127.0.0.1

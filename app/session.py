@@ -1,6 +1,7 @@
 import json
 import math
 import hashlib
+import time
 from uuid import uuid4
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -17,7 +18,7 @@ import ail_typo_squatting
 
 from similarius import get_website, extract_text_ressource, sk_similarity, ressource_difference, ratio
 
-from .utils import config, args, algo_list, sessions, red, cache_expire_session, valid_ns_mx
+from .utils import config, algo_list, sessions, red, cache_expire_session, valid_ns_mx
 from .warning_list import check_warning_list
 
 
@@ -27,17 +28,18 @@ else:
     num_threads = 10
 
 
-if not type(args)==str:
-    if not args.nocache:
-        if 'cache' in config:
-            cache_expire = config['cache']['expire']
-        else:
-            cache_expire = 86400
-    else:
-        cache_expire = 0
+if 'cache' in config:
+    cache_expire = config['cache']['expire']
 else:
     cache_expire = 86400
 
+if "Flask_server" in config:
+    if 'sk_similarity' not in config['Flask_server']:
+        sk_similarity_bool = False
+    else:
+        sk_similarity_bool = config.getboolean('Flask_server', 'sk_similarity')
+else:
+    sk_similarity_bool = False
 
 
 #################
@@ -56,6 +58,7 @@ class Session():
         self.variations_list = list()
         self.result = list()
         self.stopped = False
+        self._stop_called = False
         self.result_stopped = dict()
         self.add_data = False
         self.request_algo = list()
@@ -104,13 +107,19 @@ class Session():
             worker.daemon = True
             worker.start()
             self.threads.append(worker)
+        monitor = Thread(target=self._monitor_completion, daemon=True)
+        monitor.start()
 
 
     def geoIp(self, ip):
         """Geolocation for an IP"""
-        response = requests.get(f"https://ip.circl.lu/geolookup/{ip}")
-        response_json = response.json()
-        return response_json[0]['country_info']['Country'] 
+        try:
+            response = requests.get(f"https://ip.circl.lu/geolookup/{ip}", timeout=5)
+            response.raise_for_status()
+            response_json = response.json()
+            return response_json[0]['country_info']['Country']
+        except Exception:
+            return "Unknown"
 
     def get_original_website_info(self):
         """Get website ressource of request domain"""
@@ -186,8 +195,9 @@ class Session():
                 text, ressource_dict = extract_text_ressource(response.text)
 
                 if text and self.website:
-                    sim = str(sk_similarity(self.website, text))
-                    website_info['sim'] = sim
+                    if sk_similarity_bool:
+                        sim = str(sk_similarity(self.website, text))
+                        website_info['sim'] = sim
                     
                     # Ressources difference between original's website and varation one
                     ressource_diff = ressource_difference(self.website_ressource, ressource_dict)
@@ -195,7 +205,8 @@ class Session():
                     website_info['ressource_diff'] = ressource_diff
                     
                     # Ratio to calculate the similarity probability
-                    website_info['ratio'] = ratio(ressource_diff, sim)
+                    if sk_similarity_bool:
+                        website_info['ratio'] = ratio(ressource_diff, sim)
 
         return website_info
 
@@ -280,6 +291,20 @@ class Session():
                 self.jobs.task_done()
         return True
 
+    def _monitor_completion(self):
+        """Background watcher to auto-stop completed sessions."""
+        while True:
+            if self._stop_called or self.stopped:
+                return
+            queue_empty = self.jobs.empty()
+            workers_alive = any(worker.is_alive() for worker in self.threads)
+
+            if queue_empty and not workers_alive:
+                self.stop()
+                return
+
+            time.sleep(0.2)
+
     def status(self):
         """Status of the current queue"""
         if self.jobs.empty():
@@ -301,10 +326,17 @@ class Session():
 
     def stop(self):
         """Stop the current queue and worker"""
+        if self._stop_called:
+            return
+
+        self._stop_called = True
         self.jobs.queue.clear()
 
+        self.stopped = True
+
         for worker in self.threads:
-            worker.join(3.5)
+            if worker.is_alive():
+                worker.join(3.5)
 
         self.threads.clear()
         self.saveInfo()

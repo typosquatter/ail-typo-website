@@ -1,6 +1,8 @@
 import re
 import json
 import hashlib
+import time
+from threading import Thread
 
 from flask import Flask, render_template, request, jsonify
 
@@ -18,7 +20,7 @@ from app.misp import *
 # Arg Parse #
 #############
 
-arg_parse()
+args = arg_parse()
 
 ##########
 ## CONF ##
@@ -27,9 +29,26 @@ arg_parse()
 if 'Flask_server' in config:
     FLASK_PORT = int(config['Flask_server']['port'])
     FLASK_URL = config['Flask_server']['ip']
+    if 'debug' not in config['Flask_server']:
+        DEBUG = False
+    else:
+        DEBUG = config.getboolean('Flask_server', 'debug')
+    
+    if 'sk_similarity' not in config['Flask_server']:
+        sk_similarity_bool = False
+    else:
+        sk_similarity_bool = config.getboolean('Flask_server', 'sk_similarity')
+
+    SESSION_MAX = int(config['Flask_server'].get('session_max', 200))
+    SESSION_SWEEP_INTERVAL = int(config['Flask_server'].get('session_sweep_interval', 30))
+    
 else:
     FLASK_URL = '127.0.0.1'
     FLASK_PORT = 7005
+    DEBUG = False
+    sk_similarity_bool = False
+    SESSION_MAX = 200
+    SESSION_SWEEP_INTERVAL = 30
 
 
 #########
@@ -37,8 +56,51 @@ else:
 #########
 
 app = Flask(__name__)
-app.debug = True
+app.debug = DEBUG
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+app.config["sk_similarity"] = sk_similarity_bool
+
+
+###########
+# Helpers #
+###########
+
+
+def enforce_session_cap():
+    """Ensure the in-memory session list does not grow without bound."""
+    while len(sessions) > SESSION_MAX:
+        old = sessions[0]
+        try:
+            old.stop()
+        except Exception:
+            try:
+                sessions.pop(0)
+            except Exception:
+                break
+
+
+def cleanup_sessions_loop():
+    """Background sweeper to auto-stop finished sessions."""
+    while True:
+        try:
+            for s in sessions[:]:
+                try:
+                    queue_empty = s.jobs.empty()
+                    workers_alive = any(worker.is_alive() for worker in s.threads)
+                except Exception:
+                    continue
+
+                if queue_empty and not workers_alive:
+                    s.stop()
+        except Exception:
+            pass
+
+        time.sleep(SESSION_SWEEP_INTERVAL)
+
+
+# Start background cleanup thread when the module is imported
+sweeper = Thread(target=cleanup_sessions_loop, daemon=True)
+sweeper.start()
 
 
 ###############
@@ -65,7 +127,9 @@ def about_page():
 def typo():
     """Run the scan"""
     data_dict = dict(request.form)
-    url = data_dict["url"]    
+    url = data_dict["url"]
+    if args.nocache:
+        data_dict["use_cache"] = False
 
     domain_extract = tldextract.extract(url)
 
@@ -92,6 +156,7 @@ def typo():
     session.callVariations(data_dict)
     session.scan()
     sessions.append(session)
+    enforce_session_cap()
 
     return jsonify(session.status()), 201
     
@@ -234,6 +299,7 @@ def api(url):
     session.callVariations(data_dict)
     session.scan()
     sessions.append(session)
+    enforce_session_cap()
 
     return jsonify({'sid': session.id}), 200
 

@@ -10,7 +10,6 @@ path_config = os.path.join(os.getcwd(), "conf", "conf.cfg")
 path_etc = os.path.join(os.getcwd(), "etc", "algo_list.json")
 config = ""
 algo_list = []
-args = ""
 sessions = list()
 
 if os.path.isfile(path_config):
@@ -52,10 +51,9 @@ else:
 
 
 def arg_parse():
-    global args
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--nocache", help="Disabled caching functionality", action="store_true")
-    args = parser.parse_args()
+    return parser.parse_args()
 
 def valid_ns_mx(dns):
     """Regex to validate NS and MX entry"""
