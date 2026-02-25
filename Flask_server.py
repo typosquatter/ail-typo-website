@@ -39,16 +39,18 @@ if 'Flask_server' in config:
     else:
         sk_similarity_bool = config.getboolean('Flask_server', 'sk_similarity')
 
-    SESSION_MAX = int(config['Flask_server'].get('session_max', 200))
-    SESSION_SWEEP_INTERVAL = int(config['Flask_server'].get('session_sweep_interval', 30))
+    SESSION_MAX = int(config['Flask_server'].get('session_max', 50))
+    SESSION_SWEEP_INTERVAL = int(config['Flask_server'].get('session_sweep_interval', 360))
+    SESSION_STUCK_TIMEOUT = int(config['Flask_server'].get('session_stuck_timeout', 120))
     
 else:
     FLASK_URL = '127.0.0.1'
     FLASK_PORT = 7005
     DEBUG = False
     sk_similarity_bool = False
-    SESSION_MAX = 200
-    SESSION_SWEEP_INTERVAL = 30
+    SESSION_MAX = 50
+    SESSION_SWEEP_INTERVAL = 360
+    SESSION_STUCK_TIMEOUT = 120
 
 
 #########
@@ -80,22 +82,28 @@ def enforce_session_cap():
 
 
 def cleanup_sessions_loop():
-    """Background sweeper to auto-stop finished sessions."""
-    while True:
+    """Background sweeper with reduced CPU overhead."""
+    while True:        
         try:
+            # Iterate over a copy of the list to avoid 'size changed' errors
             for s in sessions[:]:
                 try:
-                    queue_empty = s.jobs.empty()
-                    workers_alive = any(worker.is_alive() for worker in s.threads)
+                    # Check the timestamp first (very cheap)
+                    idle_duration = time.time() - getattr(s, "last_progress", time.time())
+                    
+                    # If it's already marked stopped, just move on
+                    if s.stopped:
+                        continue
+
+                    # Only stop if it's truly stuck or the queue is done
+                    if s.jobs.empty() or idle_duration > SESSION_STUCK_TIMEOUT:
+                        s.stop()
                 except Exception:
                     continue
-
-                if queue_empty and not workers_alive:
-                    s.stop()
         except Exception:
             pass
 
-        time.sleep(SESSION_SWEEP_INTERVAL)
+        time.sleep(SESSION_SWEEP_INTERVAL) 
 
 
 # Start background cleanup thread when the module is imported

@@ -64,6 +64,7 @@ class Session():
         self.request_algo = list()
         self.catch_all = False
         self.use_cache = True
+        self.last_progress = time.time()
 
         self.result_algo = dict()
         for key in list(algo_list.keys()):
@@ -107,8 +108,6 @@ class Session():
             worker.daemon = True
             worker.start()
             self.threads.append(worker)
-        monitor = Thread(target=self._monitor_completion, daemon=True)
-        monitor.start()
 
 
     def geoIp(self, ip):
@@ -213,8 +212,17 @@ class Session():
 
     def crawl(self):
         """Threaded function for queue processing."""
-        while not self.jobs.empty():
-            work = self.jobs.get()   #fetch new work from the Queue
+        while not self.stopped:
+            try:
+                # 1. Use a blocking get with a timeout. 
+                # This makes the thread 'sleep' at the OS level until work arrives.
+                work = self.jobs.get(block=True, timeout=2)
+            except Exception:
+                # If the queue is empty after 1 second, check if we should exit
+                if self.jobs.empty():
+                    break
+                continue
+
             try:
                 flag = False
                 ## If redis have some domains cached, don't resolve it again
@@ -289,21 +297,9 @@ class Session():
             finally:
                 #signal to the queue that task has been processed
                 self.jobs.task_done()
+                self.last_progress = time.time()
+                time.sleep(0.5)  # Sleep to reduce CPU usage
         return True
-
-    def _monitor_completion(self):
-        """Background watcher to auto-stop completed sessions."""
-        while True:
-            if self._stop_called or self.stopped:
-                return
-            queue_empty = self.jobs.empty()
-            workers_alive = any(worker.is_alive() for worker in self.threads)
-
-            if queue_empty and not workers_alive:
-                self.stop()
-                return
-
-            time.sleep(0.2)
 
     def status(self):
         """Status of the current queue"""

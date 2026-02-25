@@ -3,8 +3,9 @@ ip = 127.0.0.1
 port = 7005
 sk_similarity = True
 debug = False
-session_max = 200
-session_sweep_interval = 30
+session_max = 50
+session_sweep_interval = 360
+session_stuck_timeout = 120
 
 [Flask_api]
 ip = 127.0.0.1
@@ -12,7 +13,7 @@ port = 7006
 url_to_server = https://typosquatting-finder.circl.lu
 
 [Thread]
-num_threads = 10
+num_threads = 8
 
 [redis]
 host = 127.0.0.1
