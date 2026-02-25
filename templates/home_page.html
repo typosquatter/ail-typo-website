@@ -121,7 +121,11 @@
                 <tr><td colspan="3"><hr></td></tr>
                 <tr>
                     <td>
-                        <div id="intro2">Upload a list of domains to exclude. Text file. One domain by line.</div>
+                        <div id="intro_importer">Upload a list of domains to exclude. Text file. One domain by line.</div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="importer_include">
+                            <label class="form-check-label" for="importer_include">Use as include list</label>
+                        </div>
                     </td>
                     <td colspan="1" style="padding-left: 10px;">
                         <input class="form-control" type="file" id="importer" />
@@ -196,6 +200,19 @@
                 <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
             </tr>
         </template>
+        <template v-if="include_list">
+            <tr v-for="loc_domains in include_list">
+                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="📥" title="This domain is present in the uploaded include list"></first_td></td>
+                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
+                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
+                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
+                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
+                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
+                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
+                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
+            </tr>
+        </template>
+
         <template v-if="exclude_list">
             <tr v-for="loc_domains in exclude_list">
                 <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="©️" title="This domain is present in the list of domain to exclude"></first_td></td>
@@ -362,6 +379,7 @@
                 const mx_list = ref([])
                 const ns_list = ref([])
                 const catchall_list = ref([])
+                const include_list = ref([])
                 const exclude_list = ref([])
                 const other_domains = ref([])
                 const original_domain = ref({})
@@ -371,6 +389,14 @@
 
                 $(document).ready(function() {
                     $("#alert-clip").hide();
+
+                    $('#importer_include').change(function(){
+                        if(this.checked){
+                            $('#intro_importer').text('Upload a list of domains to include. Text file. One domain by line.');
+                        }else{
+                            $('#intro_importer').text('Upload a list of domains to exclude. Text file. One domain by line.');
+                        }
+                    })
 
                     if( $("#share").val() != 0){
                         checkShare()
@@ -474,6 +500,8 @@
 
                         var files = document.getElementById('importer').files
                         formData.append("file_1", files[0]);
+                        if (document.getElementById('importer_include').checked)
+                            formData.append('include_mode', '1')
 
                         // use cache or not
                         if(!document.getElementById("use_cache").checked)
@@ -547,6 +575,7 @@
                     let loc = await res.json()
                     domains.value = loc
 
+                    include_list.value = []
                     bank_list.value = []
                     university_list.value = []
                     majestic_list.value = []
@@ -568,7 +597,9 @@
                             }else{
                                 loc = domains.value[i][loc_url]
                                 loc["permutation"] = loc_url
-                                if(domains.value[i][loc_url]["exclude_domain"])
+                                if(domains.value[i][loc_url]["included_domain"])
+                                    include_list.value.push(loc)
+                                else if(domains.value[i][loc_url]["exclude_domain"])
                                     exclude_list.value.push(loc)
                                 else if(domains.value[i][loc_url]["bank_domains"])
                                     bank_list.value.push(loc)
@@ -720,6 +751,7 @@
                     ns_list,
                     google_crux,
                     catchall_list,
+                    include_list,
                     exclude_list,
                     other_domains,
                     original_domain,

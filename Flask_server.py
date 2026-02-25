@@ -135,6 +135,8 @@ def about_page():
 def typo():
     """Run the scan"""
     data_dict = dict(request.form)
+    if not 'url' in data_dict:
+        return jsonify({'message': 'URL is required'}), 400
     url = data_dict["url"]
     if args.nocache:
         data_dict["use_cache"] = False

@@ -70,6 +70,8 @@ class Session():
         for key in list(algo_list.keys()):
             self.result_algo[key] = []
         self.result_algo['original'] = []
+        # result bucket for uploaded include list entries
+        self.result_algo['include_list'] = []
 
         self.md5Url = hashlib.md5(url.encode()).hexdigest()
 
@@ -79,9 +81,14 @@ class Session():
         self.list_ns = list()
         self.list_mx = list()
         self.list_domains_exclude = list()
+        self.list_domains_include = list()
 
         if "file_1" in request_files:
-            self.list_domains_exclude = request_files["file_1"].read().decode().splitlines()
+            # If include_mode flag is set, treat uploaded file as an include list
+            if 'include_mode' in data_dict:
+                self.list_domains_include = request_files["file_1"].read().decode().splitlines()
+            else:
+                self.list_domains_exclude = request_files["file_1"].read().decode().splitlines()
 
         if "catchAll" in data_dict:
             self.catch_all = True
@@ -283,6 +290,12 @@ class Session():
 
                     data = check_warning_list(data, work)
 
+                    # Mark domains that were uploaded as an include list
+                    if self.list_domains_include:
+                        if work[1][0] in self.list_domains_include:
+                            data[work[1][0]]['included_domain'] = True
+
+                    # Existing behavior: mark domains present in uploaded exclude list
                     if self.list_domains_exclude:
                         if work[1][0] in self.list_domains_exclude:
                             data[work[1][0]]['exclude_domain'] = True
@@ -360,6 +373,16 @@ class Session():
                     self.request_algo.append(key)
                     fun = getattr(ail_typo_squatting, key)
                     self.variations_list = fun(self.url, self.variations_list, verbose=False, limit=math.inf, givevariations=True, keeporiginal=False)
+
+        # If an include list was uploaded, ensure those domains are tested
+        if self.list_domains_include:
+            existing = set([v[0] for v in self.variations_list])
+            for d in self.list_domains_include:
+                if not d or d == self.url:
+                    continue
+                if d not in existing:
+                    # add as a special variation so it will be crawled
+                    self.variations_list.append((d, 'include_list'))
 
         self.result = [{} for x in self.variations_list]
         self.result.append({})
