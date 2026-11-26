@@ -51,3 +51,19 @@
   window.addEventListener('resize', set);
   set();
 })();
+
+/* Phone menu: three-bar button toggles the navigation panel. */
+(function () {
+  'use strict';
+  const btn = document.getElementById('menu-toggle');
+  const nav = document.getElementById('site-nav');
+  if (!btn || !nav) return;
+  const set = (open) => {
+    nav.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', String(open));
+    btn.setAttribute('aria-label', open ? 'Close the menu' : 'Open the menu');
+  };
+  btn.addEventListener('click', () => set(!nav.classList.contains('open')));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') set(false); });
+  nav.addEventListener('click', (e) => { if (e.target.closest('a')) set(false); });
+})();

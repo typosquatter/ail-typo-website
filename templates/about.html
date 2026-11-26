@@ -39,17 +39,7 @@
 
     <section class="page-section">
       <h2 class="section"><i class="fa-solid fa-box-archive" aria-hidden="true"></i> Take the results with you</h2>
-      <div class="split">
-        <div>
-          <h3>Share and export</h3>
-          <p>Every search has a link you can send to a colleague for one hour. Download the registered domains as JSON, the full list of variations, or a MISP event and feed ready to import.</p>
-        </div>
-        <div>
-          <h3>Use the API</h3>
-          <p>Start a scan and read its results from your own tools. <a href="/about#api">API reference</a>.</p>
-          <pre class="code">curl https://typosquatting-finder.circl.lu/api/circl.lu</pre>
-        </div>
-      </div>
+      <p>Every search has a link you can send to a colleague for one hour. Download the registered domains as JSON, the full list of variations, or a MISP event and feed ready to import.</p>
     </section>
 
   <section class="page-section">
@@ -63,21 +53,6 @@
       <dt><span class="tag">Catch-all mail</span></dt><dd>Accepts mail for any address, which can be used to collect mistyped e-mails.</dd>
       <dt>Similarity</dt><dd>How close the look-alike's page is to yours, combining the similarity of their text and the share of your resources it reuses. From 50% the page is treated as a copy.</dd>
     </dl>
-  </section>
-
-  <section class="page-section" id="api">
-    <h2><i class="fa-solid fa-code" aria-hidden="true"></i> API</h2>
-    <p>Start a scan with all algorithms, or name the ones you want as query parameters (see the <a href="/info">list of algorithms</a>). The answer gives the scan id.</p>
-    <pre class="code">curl https://typosquatting-finder.circl.lu/api/circl.lu
-curl "https://typosquatting-finder.circl.lu/api/circl.lu?omission&amp;homoglyph"
-{"sid": "3322fa4f-52a0-43cb-a057-22bc07bdde01"}</pre>
-    <p>Follow its progress, then read the registered domains with their DNS records:</p>
-    <pre class="code">curl https://typosquatting-finder.circl.lu/status/&lt;sid&gt;
-{"complete": 1535, "registered": 2, "remaining": 4372, "total": 5907, "stopped": false, "id": "…"}
-
-curl https://typosquatting-finder.circl.lu/domains/&lt;sid&gt;
-[{"circl.lu": {"A": ["185.194.93.14"], "MX": ["10 cppy.circl.lu"], "NS": ["ns3.eurodns.com"], "geoip": "Luxembourg", "NotExist": false}}, …]</pre>
-    <p>Exports are available once the scan is over: <code>/download/&lt;sid&gt;/json</code>, <code>/download/&lt;sid&gt;/list</code>, <code>/download/&lt;sid&gt;/misp-json</code> and <code>/download/&lt;sid&gt;/misp-feed</code>. Scans are kept for one hour.</p>
   </section>
 
   <section class="page-section">

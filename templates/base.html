@@ -21,11 +21,14 @@
           <span class="wordmark">typosquatting-<b>finder</b></span>
         </a>
       </div>
-      <nav class="site-nav" aria-label="Main">
-        <a class="site-link" href="/" {% if not active %}aria-current="page"{% endif %}><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Search</a>
-        <a class="site-link" href="/about" {% if active == 'about' %}aria-current="page"{% endif %}><i class="fa-solid fa-circle-info" aria-hidden="true"></i> About</a>
-        <a class="site-link" href="/info" {% if active == 'info' %}aria-current="page"{% endif %}><i class="fa-solid fa-shuffle" aria-hidden="true"></i> Algorithms</a>
-        <a class="btn-report" href="https://www.circl.lu/report/" target="_blank" rel="noopener"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Report an incident</a>
+      <button type="button" class="menu-toggle" id="menu-toggle" aria-controls="site-nav" aria-expanded="false" aria-label="Open the menu">
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="site-nav" id="site-nav" aria-label="Main">
+        <a class="site-link" href="/" {% if not active %}aria-current="page"{% endif %}><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> <span class="lbl">Search</span></a>
+        <a class="site-link" href="/about" {% if active == 'about' %}aria-current="page"{% endif %}><i class="fa-solid fa-circle-info" aria-hidden="true"></i> <span class="lbl">About</span></a>
+        <a class="site-link" href="/info" {% if active == 'info' %}aria-current="page"{% endif %}><i class="fa-solid fa-shuffle" aria-hidden="true"></i> <span class="lbl">Algorithms</span></a>
+        <a class="btn-report" href="https://www.circl.lu/report/" target="_blank" rel="noopener"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> <span class="lbl">Report an incident</span></a>
       </nav>
     </div>
   </header>
@@ -45,7 +48,6 @@
         <ul>
           <li><a href="/">Search a domain</a></li>
           <li><a href="/info">Algorithms</a></li>
-          <li><a href="/about#api">API</a></li>
           <li><a href="/about">About</a></li>
         </ul>
       </div>
