@@ -1,768 +1,152 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div>
-        <header>
-            <h1><img id="logo" src="{{ url_for('static',filename='image/ts-medium.png') }}"></h1>
-        </header>
-        <div id="intro"></div>
-        <div v-if="!is_searching">Typosquatting finder is a free and public service to find typosquatted domains in order to quickly assess if there are any existing fake domains used by an adversary. You can enter a domain below to discover potentially typo-squatted domains. An advanced option allows to select the algorithms used.</div>
-        <div id="searchbox">
-            <input type="hidden" id="share" value="{{share}}">
-            <input type="text" id="url" placeholder="Enter a domain name to brute force Typosquatting" autofocus>
-            <button id="scan" @click="actionScan()">[[scan]]</button>
+<div class="frame frame-wide">
+  <section class="intake" id="intake">
+    <h1>Find the do<span class="typo" aria-hidden="true">rn</span><span class="sr-only">m</span>ains pretending to be y<span class="typo" aria-hidden="true">0</span><span class="sr-only">o</span>urs.</h1>
+    <p class="lede">Type a domain. We generate every likely misspelling, look each one up in DNS, and compare the sites that answer with yours.</p>
+
+    <form id="lookup" class="lookup" novalidate>
+      <label for="url" class="sr-only">Domain to check</label>
+      <input id="url" name="url" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false"
+             placeholder="circl.lu" required autofocus>
+      <button type="submit" class="btn-primary" id="scan">Find look-alikes</button>
+    </form>
+    <p class="form-hint" id="form-hint" role="alert" hidden></p>
+    <p class="try">Try it with<button type="button" data-try="circl.lu">circl.lu</button><button type="button" data-try="misp-project.org">misp-project.org</button></p>
+
+    <details class="options" id="options">
+      <summary><i class="fa-solid fa-sliders" aria-hidden="true"></i> Options <span class="options-count" id="options-count">all algorithms</span></summary>
+      <div class="options-body">
+        <div class="opt-group">
+          <div class="opt-head">
+            <h3><i class="fa-solid fa-shuffle" aria-hidden="true"></i> Algorithms</h3>
+            <button type="button" class="btn-quiet" id="toggle-algos">Select all</button>
+          </div>
+          <p>Leave them all unselected to run every algorithm. <a href="/info">What each one does</a>.</p>
+          <div class="chips" id="algos">
+            {% for key in keys %}
+            <label class="chip" title="{{ algo_list[key][1] }}">
+              <input type="checkbox" name="algo" value="{{ key }}"><span>{{ algo_list[key][0] }}</span>
+            </label>
+            {% endfor %}
+          </div>
         </div>
-        <div class="progress">
-            <div class="progress-bar progress-bar-striped active" id="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" :style="'width:'+progress + '%;'">
+
+        <div class="opt-group">
+          <h3><i class="fa-solid fa-satellite-dish" aria-hidden="true"></i> Lookup</h3>
+          <div class="checks">
+            <label class="check"><input type="checkbox" id="catchAll"> Detect catch-all mail <small>(slower)</small></label>
+            <label class="check"><input type="checkbox" id="use_cache" checked> Use cached results <small>(ignored when you give name servers, mail servers or a domain list)</small></label>
+          </div>
+        </div>
+
+        <div class="opt-group">
+          <h3><i class="fa-solid fa-server" aria-hidden="true"></i> Your infrastructure</h3>
+          <p>Look-alikes using one of your name servers or mail servers are marked as yours. Separate several values with commas.</p>
+          <div class="fields">
+            <div class="field">
+              <label for="ns_input">Name servers</label>
+              <input type="text" id="ns_input" placeholder="ns1.example.com" autocomplete="off" spellcheck="false">
             </div>
-        </div> 
-        <span v-if="status_site" id="status">[[status_site]]</span>
-    </div>
-    <br/>
-    <div>
-        <div class="dropdown" style="float:right;" v-if="is_stop">
-            <a class="btn btn-primary dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">Download</a>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" :href="`/download/${sid}/list`">List of Variations</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" :href="`/download/${sid}/json`">Domains Identified</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" :href="`/download/${sid}/misp-feed`">MISP feed</a></li>
-                <li><a class="dropdown-item" :href="`/download/${sid}/misp-json`">MISP JSON</a></li>
-            </ul>
+            <div class="field">
+              <label for="mx_input">Mail servers</label>
+              <input type="text" id="mx_input" placeholder="mail.example.com" autocomplete="off" spellcheck="false">
+            </div>
+          </div>
         </div>
-        <button v-if="is_stop" type="button" class="btn btn-primary" :title="'https://typosquatting-finder.circl.lu/'+sid" style="float: right;" @click="share_button">Share</button>
-        <p>
-            <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseOption" role="button" aria-expanded="false" aria-controls="collapseOption">
-                Advanced
-            </a>
-        </p>
-    </div>
-    <div class="alert alert-light" id="alert-clip" role="alert">Copied !</div>
-    <div class="collapse mb-5" id="collapseOption">
-        <div class="card card-body">
-            <table>
-                <tr>
-                    <td>
-                        <input type="checkbox" id="runAll" @click="runAll()" value="runAll">
-                        <label class="mx-1" for="runAll" title="Used to run all algorithms that can be run">Run all algorithm</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" id={{keys[0]}} value={{keys[0]}}>
-                        <label class="mx-1" for={{keys[0]}} title="{{algo_list[keys[0]][1]}}">{{ algo_list[keys[0]][0] }}</label>
-                    </td>
-                    <td>
-                        <input type="checkbox" id={{keys[1]}} value={{keys[1]}}>
-                        <label class="mx-1" for={{keys[1]}} title="{{algo_list[keys[1]][1]}}">{{ algo_list[keys[1]][0] }}</label>
-                    </td>
-                </tr>
-                {% for i in range(2, len_table, 2)%}
-                <tr>
-                    <td></td>
-                    <td>
-                        <input type="checkbox" id={{keys[i]}} value={{keys[i]}}>
-                        <label class="mx-1" for={{keys[i]}} title="{{algo_list[keys[i]][1]}}">{{algo_list[keys[i]][0]}}</label>
-                    </td>
 
-                    {% if i + 1 < len_table %}
-                        <td>
-                            <input type="checkbox" id={{keys[i+1]}} value={{keys[i+1]}}>
-                            <label class="mx-1" for={{keys[i+1]}} title="{{algo_list[keys[i+1]][1]}}">{{algo_list[keys[i+1]][0]}}</label>
-                        </td>
-                    {% else %}
-                        <td></td>
-                    {%endif%}
-                </tr>
-                {%endfor%}
-                <tr>
-                    <td>
-                        <input type="checkbox" id="catchAll" value="catchAll">
-                        <label class="mx-1" for="catchAll" title="Catch all">Catch All</label>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <input type="checkbox" id="use_cache" checked value="use_cache">
-                        <label class="mx-1" for="use_cache" title="Use the cache for the request">Use Cache</label>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <br />
-                    </td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr><td colspan="3"><hr></td></tr>
-                <tr>
-                    <td><div id="intro2">Enter list of NS and/or list of MX seperated by comma. Domains will be marked (as known) in case of a match.</div></td>
-                    <td class="col-sm-5" style="padding-left: 10px;">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text" id="basic-addon1">NS</span>
-                            </div>
-                            <div class="col-sm-6">
-                                <input type="text" id="ns_input" class="form-control" placeholder="ns1.example.com" aria-label="ns" aria-describedby="basic-addon1">
-                            </div>
-                        </div>
-                    </td>
-                    <td class="col-sm-5">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text" id="basic-addon1">MX</span>
-                            </div>
-                            <div class="col-sm-6">
-                                <input type="text" id="mx_input" class="form-control" placeholder="mail.example.com" aria-label="mx" aria-describedby="basic-addon1">
-                            </div>
-                        </div>
-                    </td>
-                    
-                </tr>
-                <tr><td colspan="3"><hr></td></tr>
-                <tr>
-                    <td>
-                        <div id="intro_importer">Upload a list of domains to exclude. Text file. One domain by line.</div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="importer_include">
-                            <label class="form-check-label" for="importer_include">Use as include list</label>
-                        </div>
-                    </td>
-                    <td colspan="1" style="padding-left: 10px;">
-                        <input class="form-control" type="file" id="importer" />
-                    </td>
-                </tr>
-                <tr><td colspan="3"><hr></td></tr>
-                <tr>
-                    <td>
-                        <br />
-                    </td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td><span id="source">[<a href="info" target="_blank">more info</a>]</span></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            </table>
+        <div class="opt-group">
+          <h3><i class="fa-regular fa-file-lines" aria-hidden="true"></i> Domain list</h3>
+          <p id="importer-help">A text file with one domain per line. Matching results are marked as excluded.</p>
+          <div class="fields">
+            <div class="field">
+              <label for="importer">File</label>
+              <input type="file" id="importer" accept=".txt,text/plain">
+            </div>
+            <div class="field" style="align-self:end">
+              <label class="check"><input type="checkbox" id="importer_include"> Use it as an include list</label>
+            </div>
+          </div>
         </div>
+      </div>
+    </details>
+  </section>
+
+  <section class="report" id="report" data-state="idle" hidden aria-live="polite">
+    <p class="subject-caption" id="subject-caption">Looking for look-alikes of</p>
+    <p class="subject-domain" id="subject-domain"></p>
+
+    <div class="progress">
+      <div class="progress-track" role="progressbar" id="progress-bar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Variations checked">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+      <div class="progress-meta">
+        <span><span class="progress-pct" id="progress-pct">0%</span><span id="progress-text">Generating variations</span></span>
+        <span class="muted" id="progress-time"></span>
+      </div>
     </div>
 
+    <dl class="tally">
+      <div><dt><i class="fa-solid fa-shuffle" aria-hidden="true"></i> Variations generated</dt><dd id="t-total">0</dd></div>
+      <div><dt><i class="fa-solid fa-check" aria-hidden="true"></i> Checked</dt><dd id="t-complete">0</dd></div>
+      <div><dt><i class="fa-solid fa-globe" aria-hidden="true"></i> Registered</dt><dd id="t-registered">0</dd></div>
+      <div class="is-bad"><dt><i class="fa-regular fa-clone" aria-hidden="true"></i> Look like your site</dt><dd id="t-similar">0</dd></div>
+    </dl>
 
-    <table id="data" v-if="is_searching || is_stop">
-        <tr>
-            <th id="permutation_sort" @click="sort_col('permutation_sort')">PERMUTATION</th>
-            <th id="ip_sort" @click="sort_col('ip_sort')">IP ADDRESS</th>
-            <th id="ns_sort" @click="sort_col('ns_sort')">NAME SERVER</th>
-            <th id="mx_sort" @click="sort_col('mx_sort')">MAIL SERVER</th>
-            <th id="title_sort" @click="sort_col('title_sort')">WEB TITLE</th>
-            {% if config.sk_similarity %}
-            <th id="sim_sort" @click="sort_col('sim_sort')">WEB SIMILARITY</th>
-            {% else %}
-            <th id="sim_sort" style="color:grey" title="This value is disabled. Install typosquatting-finder locally to enable it.">
-                <i>WEB SIMILARITY</i>
-            </th>
-            {% endif %}
+    <div class="verdict" id="verdict" hidden></div>
 
-            <th id="ressource_sort" @click="sort_col('ressource_sort')">RESSOURCE DIFF</th>
+    <div class="actions" id="actions" hidden>
+      <details class="menu" id="download-menu">
+        <summary class="btn-primary"><i class="fa-solid fa-download" aria-hidden="true"></i> Download</summary>
+        <ul class="menu-list">
+          <li><a id="dl-json" download><i class="fa-regular fa-file-code" aria-hidden="true"></i> Registered domains<small>JSON with DNS records</small></a></li>
+          <li><a id="dl-list" download><i class="fa-solid fa-list" aria-hidden="true"></i> All variations<small>Plain text, one per line</small></a></li>
+          <li><a id="dl-misp-json" download><i class="fa-solid fa-file-export" aria-hidden="true"></i> MISP event<small>JSON, typosquatting-finder object</small></a></li>
+          <li><a id="dl-misp-feed" target="_blank" rel="noopener"><i class="fa-solid fa-rss" aria-hidden="true"></i> MISP feed<small>Event, manifest and hashes</small></a></li>
+        </ul>
+      </details>
+      <button type="button" class="btn-quiet" id="share"><i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Copy share link</button>
+      <span class="copied" id="copied" role="status" hidden>Link copied, valid for one hour</span>
+      <button type="button" class="btn-quiet" id="new-search"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Search another domain</button>
+    </div>
 
-            {% if config.sk_similarity %}
-            <th id="prob_sort" @click="sort_col('prob_sort')">
-                SIMILARITY PROB <span></span> 
-                <i class="fa fa-question" title="This is the result of the relation between \n'web similarity' and 'ressource diff'"></i> 
-            </th>
-            {% else %}
-            <th id="prob_sort" style="color:grey" title="This value is disabled. Install typosquatting-finder locally to enable it.">
-                <i>SIMILARITY PROB</i> <span></span> 
-                <i class="fa fa-question" title="This is the result of the relation between \n'web similarity' and 'ressource diff'"></i> 
-            </th>
-            {% endif %}
-        </tr>
-        <tr style="background-color: #e9ecef;" v-if="original_domain">
-            <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="original_domain" icon="" title="" :original="true"></first_td></td>
-            <td style="vertical-align: middle;"><ip_td :current_var="original_domain"></ip_td></td>
-            <td style="vertical-align: middle;"><ns_td :current_var="original_domain"></ns_td></td>
-            <td style="vertical-align: middle;"><mx_td :current_var="original_domain"></mx_td></td>
-            <td style="vertical-align: middle;"><website_title :current_var="original_domain"></website_title></td>
-            <td style="vertical-align: middle;"><website_sim :current_var="original_domain"></website_sim></td>
-            <td style="vertical-align: middle;"><ressource_diff :current_var="original_domain"></ressource_diff></td>
-            <td style="vertical-align: middle;"><ratio :current_var="original_domain"></ratio></td>
-        </tr>
-        <template v-if="other_domains">
-            <tr v-for="loc_domains in other_domains">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="" title=""></first_td></td>
-                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
+    <section class="results" id="results" hidden>
+      <div class="results-head">
+        <h2 class="section">Registered look-alikes</h2>
+        <label class="sr-only" for="filter-text">Filter domains</label>
+        <input class="search-box" id="filter-text" type="search" placeholder="Filter domains" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="filters" id="filters" role="group" aria-label="Show"></div>
+      <div class="table-wrap">
+        <table class="domains" id="domains">
+          <thead>
+            <tr>
+              <th data-key="domain" scope="col"><button type="button">Domain</button></th>
+              <th data-key="ip" scope="col"><button type="button">Address</button></th>
+              <th data-key="ns" scope="col"><button type="button">Name server</button></th>
+              <th data-key="mx" scope="col"><button type="button">Mail server</button></th>
+              <th data-key="title" scope="col"><button type="button">Page title</button></th>
+              {% if config.sk_similarity %}
+              <th data-key="sim" scope="col" title="How similar the page text is to your site"><button type="button">Web similarity</button></th>
+              {% else %}
+              <th class="col-off" scope="col" title="This value is disabled. Install typosquatting-finder locally to enable it."><i>Web similarity</i></th>
+              {% endif %}
+              <th data-key="diff" scope="col" title="Share of page resources that differ from your site"><button type="button">Resource diff</button></th>
+              <th data-key="ratio" scope="col" title="Combines how similar the page text is and how many resources it shares with your site"><button type="button">Similarity</button></th>
             </tr>
-        </template>
-        <template v-if="include_list">
-            <tr v-for="loc_domains in include_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="📥" title="This domain is present in the uploaded include list"></first_td></td>
-                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
-            </tr>
-        </template>
+          </thead>
+          <tbody id="domains-body"></tbody>
+        </table>
+      </div>
+      <p class="no-results" id="no-results" hidden>No domain matches this filter.</p>
+    </section>
+  </section>
 
-        <template v-if="exclude_list">
-            <tr v-for="loc_domains in exclude_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="©️" title="This domain is present in the list of domain to exclude"></first_td></td>
-                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
-            </tr>
-        </template>
-        <template v-if="bank_list">
-            <tr v-for="loc_domains in bank_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="🏦" title="This domain is present in the list of known banking website"></first_td></td>
-                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
-            </tr>
-        </template>
-        <template v-if="university_list">
-            <tr v-for="loc_domains in university_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="📚" title="This domain is present in the list of university domains"></first_td></td>
-                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
-            </tr>
-        </template>
-        <template v-if="majestic_list">
-            <tr v-for="loc_domains in majestic_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="✅" title="This domain is present in the top 100000 of the most visited websites"></first_td></td>
-                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
-            </tr>
-        </template>
-        <template v-if="tranco_list">
-            <tr v-for="loc_domains in tranco_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="☑️" title="This domain is present in the top 100000 of Tranco list"></first_td></td>
-                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
-            </tr>
-        </template>
-        <template v-if="moz_list">
-            <tr v-for="loc_domains in moz_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="🦊" title="This domain is present in the top 500 of moz list"></first_td></td>
-                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
-            </tr>
-        </template>
-        <template v-if="google_crux">
-            <tr v-for="loc_domains in google_crux">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="🥽" title="This domain is present in the top 1 Million of google crux list"></first_td></td>
-                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
-            </tr>
-        </template>
-        <template v-if="parking_list">
-            <tr v-for="loc_domains in parking_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="🅿️" title="This domain is present in the list of parking domain"></first_td></td>
-                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
-            </tr>
-        </template>
-        <template v-if="ns_list">
-            <tr v-for="loc_domains in ns_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="®️" title="This domain is present in the list of NS you entered"></first_td></td>
-                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
-            </tr>
-        </template>
-        <template v-if="mx_list">
-            <tr v-for="loc_domains in mx_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="Ⓜ️" title="This domain is present in the list of MX you entered"></first_td></td>
-                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
-            </tr>
-        </template>
-        <template v-if="catchall_list">
-            <tr v-for="loc_domains in catchall_list">
-                <td style="vertical-align: middle; padding-left: 5px;"><first_td :current_var="loc_domains" icon="🪣" :title="loc_domains['CatchAll']"></first_td></td>
-                <td style="vertical-align: middle;"><ip_td :current_var="loc_domains"></ip_td></td>
-                <td style="vertical-align: middle;"><ns_td :current_var="loc_domains"></ns_td></td>
-                <td style="vertical-align: middle;"><mx_td :current_var="loc_domains"></mx_td></td>
-                <td style="vertical-align: middle;"><website_title :current_var="loc_domains"></website_title></td>
-                <td style="vertical-align: middle;"><website_sim :current_var="loc_domains"></website_sim></td>
-                <td style="vertical-align: middle;"><ressource_diff :current_var="loc_domains"></ressource_diff></td>
-                <td style="vertical-align: middle;"><ratio :current_var="loc_domains"></ratio></td>
-            </tr>
-        </template>
-    </table>
+</div>
 {% endblock %}
 
 {% block script %}
-    <script type="module">
-        const { createApp, ref} = Vue
-        import tab_data, {first_td, ip_td, ns_td, mx_td, website_title, website_sim, ressource_diff, ratio} from "/static/js/tab_data.js"
-        
-        createApp({
-            delimiters: ['[[', ']]'],
-            components: {
-                first_td, ip_td, ns_td, mx_td, website_title, website_sim, ressource_diff, ratio
-            },
-            setup() {
-                const current_url = ref("")
-                const progress = ref(0)
-                const status_site = ref("")
-                const is_searching = ref(false)
-                const is_stop = ref(false)
-                const scan = ref("Search")
-                const sid = ref(null)
-                const domains = ref(null)
-                let last_registered = 0
-
-                const bank_list = ref([])
-                const university_list = ref([])
-                const majestic_list = ref([])
-                const tranco_list = ref([])
-                const moz_list = ref([])
-                const google_crux = ref([])
-                const parking_list = ref([])
-                const mx_list = ref([])
-                const ns_list = ref([])
-                const catchall_list = ref([])
-                const include_list = ref([])
-                const exclude_list = ref([])
-                const other_domains = ref([])
-                const original_domain = ref({})
-
-                // List of algo used to generate variations
-                let algo_list = ["omission", "repetition", "changeOrder", "replacement", "doubleReplacement", "addition", "missingDot", "stripDash", "vowelSwap", "addDash", "homoglyph", "commonMisspelling", "homophones", "wrongTld", "addTld", "subdomain", "singularPluralize", "changeDotDash", "addDynamicDns", "numeralSwap", "wrongSld"]
-
-                $(document).ready(function() {
-                    $("#alert-clip").hide();
-
-                    $('#importer_include').change(function(){
-                        if(this.checked){
-                            $('#intro_importer').text('Upload a list of domains to include. Text file. One domain by line.');
-                        }else{
-                            $('#intro_importer').text('Upload a list of domains to exclude. Text file. One domain by line.');
-                        }
-                    })
-
-                    if( $("#share").val() != 0){
-                        checkShare()
-                    }
-                    $('#url').on('keypress',function(e) {
-                        if(e.which == 13) {
-                            actionScan();
-                        }
-                    });
-                })
-
-
-                // Check all algorithms' box when runAll box is checked
-                function runAll(){
-                    if (document.getElementById("runAll").checked){
-                        for( let i=0; i< algo_list.length; i++){
-                            $('#' + algo_list[i]).prop('checked', true);
-                        }
-                        $("#catchAll").prop('checked', true)
-                    }else{
-                        for( let i=0; i< algo_list.length; i++){
-                            $('#' + algo_list[i]).prop('checked', false);
-                        }
-                        $("#catchAll").prop('checked', false)
-                    }
-                };
-
-                // Copy link to share search into clipboard
-                function share_button(){
-                    navigator.clipboard.writeText("https://typosquatting-finder.circl.lu/" + sid.value);
-                    $("#alert-clip").fadeTo(2000, 500).slideUp(500, function() {
-                        $("#alert-clip").slideUp(500);
-                    })
-                }
-
-                function checkShare(){
-                    $.get({
-                        url: '/share/' + $("#share").val(),
-                        contentType: 'application/json',
-                        success: function(data) {
-                            sid.value = $("#share").val()
-                            $('#url').val(data)
-                            current_url.value = data
-                            scan.value = 'Stop'
-                            pollScan();
-                        },
-                        error: function(xhr, status, error) {
-                            scan.value = 'Search'
-                            status_site.value = xhr.responseJSON['message'] || 'Something went wrong'
-                        },
-                    });
-
-                }
-
-                
-                async function actionScan() {
-                    // No domain enter
-                    current_url.value = $('#url').val()
-                    if (!current_url.value) {
-                        status_site.value = '↖ You need to type in a domain name first'
-                        return
-                    }
-
-                    if (scan.value == 'Search') {
-                        last_registered = 0;
-                        scan.value = '⏱'
-                        status_site.value = ""
-                        progress.value = 0
-                        is_stop.value = false
-                        domains.value = {}
-
-                        
-                        let formData = new FormData();
-                        let flag = false
-                        formData.append('url', current_url.value)
-                        // Run all algorithms present in the list
-                        if (document.getElementById("runAll").checked){
-                            formData.append('runAll', $('#runAll').val())
-                            flag = true
-                        }else{
-                            // Run only checked algorithms
-                            for(let i=0; i< algo_list.length; i++){
-                                if (document.getElementById(algo_list[i]).checked){
-                                    formData.append(algo_list[i], $('#' + algo_list[i]).val())
-                                    flag = true
-                                }
-                            }
-                        }
-                        if (document.getElementById("catchAll").checked){
-                            formData.append('catchAll', $('#catchAll').val())
-                        }
-
-                        // If nothing is checked, run all algorihtms present in the list
-                        if(!flag){
-                            formData.append('runAll', $('#runAll').val())
-                        }
-
-                        // NS and MX input
-                        formData.append('NS', $('#ns_input').val());
-                        formData.append('MX', $('#mx_input').val());
-
-                        var files = document.getElementById('importer').files
-                        formData.append("file_1", files[0]);
-                        if (document.getElementById('importer_include').checked)
-                            formData.append('include_mode', '1')
-
-                        // use cache or not
-                        if(!document.getElementById("use_cache").checked)
-                            formData.append('use_cache', "use_cache")
-                        
-                        // Send request info to server to execute the search
-                        const res = await fetch(
-                            '/typo',{
-                                method: "POST",
-                                files: files,
-                                body: formData
-                            }
-                        )
-                        if(await res.status == 201){
-                            let loc = await res.json()
-                            is_searching.value = true
-                            sid.value = loc['id']
-                            scan.value = 'Stop'
-                            pollScan();
-                        }else{
-                            let loc = await res.json()
-                            scan.value = 'Search'                          
-                            status_site.value = loc['message'] || 'Something went wrong'
-
-                            if(status_site.value.includes("]")){
-                                status_site.value = status_site.value.split("]")[1]
-                            }
-                        }
-
-                    // Stop button is pressed
-                    } else {
-                        stop();
-                        $.post({
-                            url: '/stop/' + sid.value,
-                            contentType: 'application/json',
-                            success: function() {
-                                scan.value = 'Search'
-                                is_stop.value = true
-                            }
-                        });
-                    }
-                }
-
-                function pollScan() {
-                    // Loop function to update the list of identified domains
-                    $.getJSON('/status/' + sid.value, function(data) {
-                        progress.value = Math.round((data['complete']/data['total'])*100)
-                        status_site.value = 'Processed ' + data['complete'] + ' of ' + data['total']
-                        if (data['remaining'] > 0) {
-                            setTimeout(pollScan, 3000);
-                        } else {
-                            // Button Stop pressed
-                            if (data['stopped'])
-                                status_site.value = 'Stopped ! Identified ' + data['registered'] + ' registered.'
-                            // Display result of the search
-                            else
-                                status_site.value = 'Found ' + data['complete'] + ' domains. Identified ' + data['registered'] + ' registered.'
-                            scan.value = 'Search'
-                            is_stop.value = true
-                        }
-                        if (last_registered < data['registered']) {
-                            last_registered = data['registered']
-                            fetchDomains();
-                        }
-                    });
-                }
-
-                async function fetchDomains(){
-                    domains.value = {}
-                    const res = await fetch("/domains/"+sid.value)
-                    let loc = await res.json()
-                    domains.value = loc
-
-                    include_list.value = []
-                    bank_list.value = []
-                    university_list.value = []
-                    majestic_list.value = []
-                    tranco_list.value = []
-                    moz_list.value = []
-                    parking_list.value = []
-                    mx_list.value = []
-                    ns_list.value = []
-                    catchall_list.value = []
-                    exclude_list.value = []
-                    google_crux.value = []
-                    other_domains.value = []
-
-                    for(let i in domains.value){
-                        for(let loc_url in domains.value[i] ){
-                            if(loc_url == current_url.value){
-                                original_domain.value = domains.value[i][loc_url]
-                                original_domain.value["permutation"] = loc_url
-                            }else{
-                                loc = domains.value[i][loc_url]
-                                loc["permutation"] = loc_url
-                                if(domains.value[i][loc_url]["included_domain"])
-                                    include_list.value.push(loc)
-                                else if(domains.value[i][loc_url]["exclude_domain"])
-                                    exclude_list.value.push(loc)
-                                else if(domains.value[i][loc_url]["bank_domains"])
-                                    bank_list.value.push(loc)
-                                else if(domains.value[i][loc_url]["university_domains"])
-                                    university_list.value.push(loc)
-                                else if(domains.value[i][loc_url]["majestic_million"])
-                                    majestic_list.value.push(loc)
-                                else if(domains.value[i][loc_url]["tranco"])
-                                    tranco_list.value.push(loc)
-                                else if(domains.value[i][loc_url]["moz-top500"])
-                                    moz_list.value.push(loc)
-                                else if(domains.value[i][loc_url]["parking_domains"])
-                                    parking_list.value.push(loc)
-                                else if(domains.value[i][loc_url]["ns_identified"])
-                                    ns_list.value.push(loc)
-                                else if(domains.value[i][loc_url]["mx_identified"])
-                                    mx_list.value.push(loc)
-                                else if(domains.value[i][loc_url]["CatchAll"])
-                                    catchall_list.value.push(loc)
-                                else if(domains.value[i][loc_url]["google_crux"])
-                                    google_crux.value.push(loc)
-                                else
-                                    other_domains.value.push(loc)
-                            }
-                        }
-                    }
-
-                }
-
-                function sort_col(ele){
-                    ele = $("#"+ele)[0]
-                    var table = $(ele).parents('table').eq(0)
-                    var rows = table.find('tr:gt(0)').toArray().sort(compare($(ele).index(), !ele.asc))
-                    ele.asc = !ele.asc
-                    if (!ele.asc){rows = rows.reverse()}
-                    for (var i = 0; i < rows.length; i++){table.append(rows[i])} 
-                }
-
-                function compare(index, asc) {
-                    return function(a, b) {
-                        var valA = getCellValue(a, index), valB = getCellValue(b, index)
-                        var valColumn0A = getCellValue(a, 0), valColumn0B = getCellValue(b, 0)
-                        const icon = ['✅', '🅿️', '📚', '🏦', '🦊', '☑️', 'Ⓜ️', '®️', '🪣', '©️', '🥽']
-
-                        const col0_valA = icon.some(e1 => valColumn0A.includes(e1))
-                        const col0_valB = icon.some(e1 => valColumn0B.includes(e1))
-
-                        if(valA[0] == " "){
-                            valA = valA.substring(1)
-                        }
-                        if(valB[0] == " "){
-                            valB = valB.substring(1)
-                        }
-                        
-                        if(index == 1){
-                            if (!valA.trim() || col0_valA) {
-                                if (asc)
-                                    valA = '999.999'
-                                else
-                                    valA = '0.0'
-                            }else
-                                valA = valA.split(".")[0] + '.' + valA.split(".")[1]
-
-                            if (!valB.trim() || col0_valB) {
-                                if (asc)
-                                    valB = '999.999'
-                                else
-                                    valB = '0.0'
-                            }else
-                                valB = valB.split(".")[0] + '.' + valB.split(".")[1]
-                            
-                        }
-                        if(index == 3){
-                            valA = valA.split(" ")[1]
-                            valB = valB.split(" ")[1]
-                        }
-                        if(index == 5 || index == 6 || index == 7){
-                            if (!valA.trim() || col0_valA) {
-                                if (asc)
-                                    valA = '999'
-                                else
-                                    valA = '-1'
-                            }else
-                                valA = valA.split(" ")[0]
-
-                            if (!valB.trim() || col0_valB) {
-                                if (asc)
-                                    valB = '999'
-                                else
-                                    valB = '-1'
-                            }else
-                                valB = valB.split(" ")[0]
-                        }
-                        
-                        
-                        if ((!valA || col0_valA) && (index != 1 && index != 5 && index != 6 && index != 7)) {
-                            if (asc){
-                                if (!valA)
-                                    valA = 'zzz'
-                                else
-                                    valA = 'yyy'
-                            }
-                            else{
-                                if (!valA)
-                                    valA = 'aaa'
-                                else
-                                    valA = 'aab'
-                            }
-                        }
-                        
-                        if ((!valB || col0_valB) && (index != 1 && index != 5 && index != 6 && index != 7)) {
-                            if (asc){
-                                if (!valB)
-                                    valB = 'zzz'
-                                else
-                                    valB = 'yyy'
-                            }
-                            else{
-                                if (!valB)
-                                    valB = 'aaa'
-                                else
-                                    valB = 'aab'
-                            }
-                        };
-
-                        return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB)
-                    }
-                }
-                function getCellValue(row, index){ return $(row).children('td').eq(index).text() }
-                
-
-                return {
-                    status_site,
-                    progress,
-                    is_searching,
-                    is_stop,
-                    scan,
-                    sid,
-                    domains,
-                    current_url,
-
-                    bank_list,
-                    university_list,
-                    majestic_list,
-                    tranco_list,
-                    moz_list,
-                    parking_list,
-                    mx_list,
-                    ns_list,
-                    google_crux,
-                    catchall_list,
-                    include_list,
-                    exclude_list,
-                    other_domains,
-                    original_domain,
-
-                    actionScan,
-                    sort_col,
-                    runAll,
-                    share_button
-                }
-            }
-        }).mount('#container')
-
-    </script>
+<script>window.TYPO = { share: {{ share|tojson }}, algos: {{ keys|tojson }}, names: { {% for k in keys %}{{ k|tojson }}: {{ algo_list[k][0]|tojson }}{{ ',' if not loop.last }}{% endfor %} } };</script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
 {% endblock %}
