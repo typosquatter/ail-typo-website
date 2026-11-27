@@ -471,6 +471,8 @@
       case 'mx': return r.mx || null;
       case 'title': return r.title ? r.title.toLowerCase() : null;
       case 'ratio': return r.score;
+      case 'sim': return r.sim;
+      case 'diff': return r.diff;
       default: return null;
     }
   }
@@ -546,7 +548,8 @@
       const tip = [`Score ${r.score}`, r.sim !== null ? `text ${r.sim}%` : '', r.diff !== null ? `resources ${r.diff}%` : ''].filter(Boolean).join(', ');
       score.append(el('span', { class: 'score', 'data-level': level, title: tip }, [bar, `${Math.round(r.score)}%`]));
     }
-    tr.append(first, ip, ns, mx, title, score);
+    const pct = (v, label) => el('td', { class: 'data', 'data-label': label, text: v !== null ? `${v}%` : '' });
+    tr.append(first, ip, ns, mx, title, pct(r.sim, 'Web similarity'), pct(r.diff, 'Resource diff'), score);
     return tr;
   }
 
@@ -574,7 +577,7 @@
     const key = b.parentElement.dataset.key;
     if (state.sort.key === key) {
       if (state.sort.dir === 1) state.sort.dir = -1; else state.sort = { key: null, dir: 1 };
-    } else state.sort = { key, dir: key === 'ratio' ? -1 : 1 };
+    } else state.sort = { key, dir: key === 'ratio' || key === 'sim' ? -1 : 1 };
     renderResults();
   }));
 

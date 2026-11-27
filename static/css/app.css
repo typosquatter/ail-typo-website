@@ -1017,3 +1017,5 @@ body:not(.has-report) .intake {
   .site-link.secondary, .topbar .btn-report { display: flex; }
   .site-nav:not(.open) .btn-report { display: none; }
 }
+
+.domains th.col-off { color: var(--muted, #888); font-weight: 400; }

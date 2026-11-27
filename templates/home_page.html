@@ -127,6 +127,12 @@
               <th data-key="ns" scope="col"><button type="button">Name server</button></th>
               <th data-key="mx" scope="col"><button type="button">Mail server</button></th>
               <th data-key="title" scope="col"><button type="button">Page title</button></th>
+              {% if config.sk_similarity %}
+              <th data-key="sim" scope="col" title="How similar the page text is to your site"><button type="button">Web similarity</button></th>
+              {% else %}
+              <th class="col-off" scope="col" title="This value is disabled. Install typosquatting-finder locally to enable it."><i>Web similarity</i></th>
+              {% endif %}
+              <th data-key="diff" scope="col" title="Share of page resources that differ from your site"><button type="button">Resource diff</button></th>
               <th data-key="ratio" scope="col" title="Combines how similar the page text is and how many resources it shares with your site"><button type="button">Similarity</button></th>
             </tr>
           </thead>
